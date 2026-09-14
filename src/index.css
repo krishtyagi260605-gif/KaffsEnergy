@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-heading: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --bg-black: #050608;
+    --bg-charcoal: #0B0E14;
+    --ice-cyan: #00F0FF;
+    --ice-blue: #0284C7;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #050608;
+    color: #EDEDED;
+    overflow-x: hidden;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.03em;
+  }
+}
+
+/* Restrained Luxury Dark Panels */
+.panel-dark {
+  background: #090B10;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.panel-dark:hover {
+  border-color: rgba(0, 240, 255, 0.25);
+}
+
+.panel-featured {
+  background: radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.06) 0%, #080B12 70%);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  box-shadow: 0 25px 60px -20px rgba(0, 0, 0, 0.8), 0 0 40px -15px rgba(0, 240, 255, 0.15);
+}
+
+/* Subtle Cinematic Lighting */
+.cinema-glow {
+  box-shadow: 0 0 50px -10px rgba(0, 240, 255, 0.2);
+}
+
+.text-gradient-ice {
+  background: linear-gradient(180deg, #FFFFFF 20%, #B8E7FA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-silver {
+  background: linear-gradient(180deg, #FFFFFF 40%, #8E98A8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 3D Tilt Card Base */
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Minimal Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #050608;
+}
+::-webkit-scrollbar-thumb {
+  background: #1A1F2B;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00F0FF;
+}
