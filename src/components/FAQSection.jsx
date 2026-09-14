@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus } from './Icons';
 
 export default function FAQSection() {
   const [openIdx, setOpenIdx] = useState(null);

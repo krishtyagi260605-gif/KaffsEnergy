@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight, Play } from './Icons';
 
 export default function HeroSection() {
   const scrollTo = (id) => {

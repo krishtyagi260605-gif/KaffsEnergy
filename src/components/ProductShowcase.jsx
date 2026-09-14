@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useCart } from '../context/CartContext';
-import { ShoppingBag, Check } from 'lucide-react';
+import { ShoppingBag, Check } from './Icons';
 
 function PremiumCard({ sku, onAddToCart, isFeatured }) {
   const cardRef = useRef(null);

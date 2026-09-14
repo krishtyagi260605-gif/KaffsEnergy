@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { X, Check, Lock, ArrowRight } from 'lucide-react';
+import { X, Check, Lock, ArrowRight } from './Icons';
 
 export default function CheckoutModal() {
   const { isCheckoutOpen, setIsCheckoutOpen, total, clearCart } = useCart();
