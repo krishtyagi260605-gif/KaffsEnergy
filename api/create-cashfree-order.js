@@ -40,7 +40,7 @@ export default async function handler(req, res) {
           customer_phone: cleanPhone,
         },
         order_meta: {
-          notify_url: 'https://kaffs.in/api/cashfree-webhook',
+          notify_url: 'https://kaffsenergy.shop/api/cashfree-webhook',
         },
         order_note: order_note || "KAFF'S Energy Pre-Order Batch 001",
       }),
