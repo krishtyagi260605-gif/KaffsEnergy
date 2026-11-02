@@ -14,8 +14,8 @@ export default function FAQSection() {
       a: 'Each strip contains exactly 40mg of pure caffeine — equivalent to a strong espresso shot or an energy drink can, with 0g sugar and 0 calories.',
     },
     {
-      q: 'What packs are available?',
-      a: 'Pack of 5 for ₹229 (₹45.80/strip) and Pack of 10 for ₹399 (₹39.90/strip, Best Value). Free shipping is automatically applied on all orders of ₹399 or more.',
+      q: 'What packs and flavors are available?',
+      a: 'Available in two signature flavors: ❄️ Cool Mint and ☕ Coffee Clash. Choose between Pack of 5 (₹229) and Pack of 10 (₹399). Standard delivery of ₹40 is 100% waived with promo code FOUNDER001. All Batch 001 orders dispatch in 2–3 weeks with live tracking.',
     },
     {
       q: 'When should I take KAFF\'S?',

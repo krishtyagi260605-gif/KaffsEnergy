@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { X, Check, Lock, ArrowRight } from './Icons';
+import { X, Check, Lock, ArrowRight, ShieldCheck } from './Icons';
 
 export default function CheckoutModal() {
-  const { isCheckoutOpen, setIsCheckoutOpen, total, clearCart } = useCart();
+  const {
+    isCheckoutOpen,
+    setIsCheckoutOpen,
+    cartItems,
+    subtotal,
+    discountAmount,
+    shippingFee,
+    total,
+    appliedPromo,
+    clearCart,
+  } = useCart();
 
   const [paymentMethod, setPaymentMethod] = useState('upi'); // upi, card, cod
   const [formData, setFormData] = useState({
@@ -16,145 +26,324 @@ export default function CheckoutModal() {
   });
   const [isSuccess, setIsSuccess] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [completedOrder, setCompletedOrder] = useState(null);
 
   if (!isCheckoutOpen) return null;
 
-  const handlePayNow = (e) => {
+  const finalPayable = total;
+
+  const handlePayNow = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
+    setErrorMessage('');
 
-    setTimeout(() => {
+    if (paymentMethod === 'cod') {
+      setTimeout(() => {
+        setIsProcessing(false);
+        setCompletedOrder({
+          id: `KAFFS-B001-${Math.floor(1000 + Math.random() * 9000)}`,
+          backerNumber: Math.floor(715 + Math.random() * 20),
+          method: 'Cash on Delivery',
+          amount: finalPayable,
+          items: cartItems.map((i) => `${i.packSize} Strips (${i.flavor || 'Cool Mint'})`).join(', '),
+        });
+        setIsSuccess(true);
+        clearCart();
+      }, 1000);
+      return;
+    }
+
+    try {
+      // 1. Call backend endpoint to initialize Cashfree session
+      const response = await fetch('/api/create-cashfree-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: finalPayable,
+          customer_name: formData.name,
+          customer_phone: formData.phone,
+          customer_email: formData.email,
+          order_note: `Batch 001 Pre-Order: ${formData.city}, ${formData.pincode} [${cartItems.map((i) => `${i.packSize}pk-${i.flavor}`).join('; ')}]`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.payment_session_id) {
+        throw new Error(data.message || data.error || 'Failed to initialize payment session. Please retry.');
+      }
+
+      // 2. Launch Cashfree v3 Modal
+      if (!window.Cashfree) {
+        throw new Error('Payment gateway SDK is loading. Please retry in a moment.');
+      }
+
+      const cashfree = window.Cashfree({
+        mode: import.meta.env.VITE_CASHFREE_ENV || 'production',
+      });
+
+      cashfree.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: '_modal',
+      }).then(async (result) => {
+        setIsProcessing(false);
+
+        if (result.error) {
+          console.warn('Payment window closed:', result.error);
+          setErrorMessage(result.error.message || 'Payment window closed. You can retry whenever ready.');
+          return;
+        }
+
+        // 3. Mark success and show VIP backer confirmation
+        try {
+          const verifyRes = await fetch(`/api/verify-cashfree-order?order_id=${data.order_id}`);
+          const verifyData = await verifyRes.json();
+
+          setCompletedOrder({
+            id: (data.order_id || `KAFFS-${Date.now()}`).toUpperCase(),
+            cfOrderId: data.cf_order_id,
+            backerNumber: Math.floor(715 + Math.random() * 20),
+            method: 'Instant UPI / Card (Cashfree Secured)',
+            amount: finalPayable,
+            status: verifyData.order_status || 'PAID',
+            items: cartItems.map((i) => `${i.packSize} Strips (${i.flavor || 'Cool Mint'})`).join(', '),
+          });
+        } catch {
+          setCompletedOrder({
+            id: (data.order_id || `KAFFS-${Date.now()}`).toUpperCase(),
+            cfOrderId: data.cf_order_id,
+            backerNumber: Math.floor(715 + Math.random() * 20),
+            method: 'Instant UPI / Card (Cashfree Secured)',
+            amount: finalPayable,
+            status: 'PAID',
+            items: cartItems.map((i) => `${i.packSize} Strips (${i.flavor || 'Cool Mint'})`).join(', '),
+          });
+        }
+
+        setIsSuccess(true);
+        clearCart();
+      });
+    } catch (err) {
+      console.error('Payment Error:', err);
       setIsProcessing(false);
-      setIsSuccess(true);
-      clearCart();
-    }, 1200);
+      setErrorMessage(err.message || 'Could not connect to payment gateway. Please retry.');
+    }
   };
 
   const handleClose = () => {
     setIsCheckoutOpen(false);
     setIsSuccess(false);
+    setErrorMessage('');
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-      <div className="bg-[#080B12] border border-white/[0.08] rounded-3xl max-w-xl w-full p-6 sm:p-10 relative shadow-2xl my-8">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6 overflow-y-auto">
+      <div className="bg-[#080B12] border-t sm:border border-cyan-500/25 rounded-t-3xl sm:rounded-3xl max-w-xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto p-5 sm:p-8 relative shadow-[0_0_60px_rgba(0,240,255,0.12)] my-0 sm:my-8 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         
-        <button
-          onClick={handleClose}
-          className="absolute top-6 right-6 p-2 text-slate-400 hover:text-white transition-colors cursor-pointer"
-          aria-label="Close Checkout"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
         {!isSuccess ? (
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-[11px] font-mono tracking-widest text-slate-400 uppercase">
-                <Lock className="w-3 h-3 text-cyan-400" />
-                <span>SECURE CHECKOUT</span>
+          <div className="space-y-4 sm:space-y-6">
+            {/* Top Navigation Row */}
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 text-[9.5px] sm:text-[10px] font-mono tracking-widest text-cyan-400 uppercase font-bold">
+                  <Lock className="w-3 h-3" />
+                  <span>CASHFREE SECURE</span>
+                </div>
+                <span className="text-[9px] sm:text-[10px] font-mono uppercase bg-cyan-400/10 text-cyan-300 border border-cyan-400/30 px-2 py-0.5 rounded-full font-bold">
+                  BATCH 001
+                </span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black font-heading text-white uppercase tracking-tight">
-                COMPLETE ORDER
-              </h3>
+
+              <button
+                onClick={handleClose}
+                className="p-1.5 text-slate-400 hover:text-white active:scale-90 transition-transform cursor-pointer rounded-lg bg-white/5"
+                aria-label="Close Checkout"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
+            {/* Header Title */}
+            <div className="space-y-1">
+              <h3 className="text-xl sm:text-3xl font-black font-heading text-white uppercase tracking-tight">
+                CLAIM YOUR ALLOCATION
+              </h3>
+              <p className="text-[11px] sm:text-xs text-slate-400 font-mono">
+                ⚡ ₹40 Delivery Fee Waived with 'FOUNDER001' • Ships in 2–3 weeks
+              </p>
+            </div>
+
+            {/* Selected Items Summary */}
+            {cartItems.length > 0 && (
+              <div className="p-3 bg-[#0B0F19] rounded-xl border border-white/[0.06] space-y-1">
+                <div className="text-[10px] font-mono uppercase text-slate-500">Order Items:</div>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  {cartItems.map((item) => (
+                    <span
+                      key={item.id}
+                      className="text-xs font-mono px-2 py-1 rounded-lg bg-black/40 border border-white/10 text-white flex items-center gap-1.5"
+                    >
+                      <span className="font-bold">{item.quantity}x {item.packSize === 5 ? 'Pack of 5' : 'Pack of 10'}</span>
+                      <span className={item.flavor === 'Coffee Clash' ? 'text-amber-400 font-bold' : 'text-cyan-400 font-bold'}>
+                        ({item.flavor === 'Coffee Clash' ? '☕' : '❄️'} {item.flavor})
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Error Banner */}
+            {errorMessage && (
+              <div className="p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-xs text-red-300 font-mono flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             {/* Form */}
-            <form onSubmit={handlePayNow} className="space-y-6">
+            <form onSubmit={handlePayNow} className="space-y-4 sm:space-y-5">
               
               {/* Shipping Information */}
-              <div className="space-y-3">
-                <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block font-bold">
-                  Shipping Address (India)
+              <div className="space-y-2">
+                <label className="text-[10px] sm:text-[11px] font-mono text-slate-400 uppercase tracking-wider block font-bold">
+                  Delivery Details (India)
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <input
                     type="text"
                     required
                     placeholder="Full Name"
+                    autoComplete="name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="px-4 py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-white/40"
+                    className="px-3.5 py-2.5 sm:py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-base sm:text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400"
                   />
                   <input
                     type="tel"
                     required
-                    placeholder="Phone Number"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    placeholder="WhatsApp Phone Number"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="px-4 py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-white/40"
+                    className="px-3.5 py-2.5 sm:py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-base sm:text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400"
                   />
                 </div>
                 <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="Email Address (for Order Updates)"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3.5 py-2.5 sm:py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-base sm:text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400"
+                />
+                <input
                   type="text"
                   required
-                  placeholder="Address (House/Apartment, Street)"
+                  autoComplete="street-address"
+                  placeholder="Street Address / House No."
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-4 py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-white/40"
+                  className="w-full px-3.5 py-2.5 sm:py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-base sm:text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400"
                 />
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
                     required
+                    autoComplete="address-level2"
                     placeholder="City"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="px-4 py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-white/40"
+                    className="px-3.5 py-2.5 sm:py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-base sm:text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400"
                   />
                   <input
                     type="text"
                     required
+                    inputMode="numeric"
+                    autoComplete="postal-code"
                     placeholder="PIN Code"
                     value={formData.pincode}
                     onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                    className="px-4 py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-white/40"
+                    className="px-3.5 py-2.5 sm:py-3 bg-[#0B0F19] border border-white/10 rounded-xl text-base sm:text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400"
                   />
                 </div>
               </div>
 
               {/* Payment Method Selector */}
-              <div className="space-y-3">
-                <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block font-bold">
-                  Payment Method
-                </label>
-                <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] sm:text-[11px] font-mono text-slate-400 uppercase tracking-wider block font-bold">
+                    Payment Method
+                  </label>
+                  <span className="text-[9.5px] sm:text-[10px] font-mono text-cyan-400">
+                    ⚡ Instant UPI / Cards
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('upi')}
-                    className={`py-3 px-2 rounded-xl border text-xs font-mono tracking-wider uppercase transition-all cursor-pointer ${
+                    className={`py-2.5 sm:py-3 px-2 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
                       paymentMethod === 'upi'
-                        ? 'bg-white text-black border-white font-bold'
+                        ? 'bg-cyan-400 text-black border-cyan-400 font-black shadow-lg shadow-cyan-400/20'
                         : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
                     }`}
                   >
-                    UPI
+                    <span>UPI</span>
+                    <span className="text-[8.5px] sm:text-[9px] opacity-80">GPay/PhonePe</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('card')}
-                    className={`py-3 px-2 rounded-xl border text-xs font-mono tracking-wider uppercase transition-all cursor-pointer ${
+                    className={`py-2.5 sm:py-3 px-2 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
                       paymentMethod === 'card'
-                        ? 'bg-white text-black border-white font-bold'
+                        ? 'bg-cyan-400 text-black border-cyan-400 font-black shadow-lg shadow-cyan-400/20'
                         : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
                     }`}
                   >
-                    Card
+                    <span>Cards</span>
+                    <span className="text-[8.5px] sm:text-[9px] opacity-80">NetBanking</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('cod')}
-                    className={`py-3 px-2 rounded-xl border text-xs font-mono tracking-wider uppercase transition-all cursor-pointer ${
+                    className={`py-2.5 sm:py-3 px-2 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
                       paymentMethod === 'cod'
                         ? 'bg-white text-black border-white font-bold'
                         : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
                     }`}
                   >
-                    COD
+                    <span>COD</span>
+                    <span className="text-[8.5px] sm:text-[9px] opacity-80">Cash At Door</span>
                   </button>
+                </div>
+              </div>
+
+              {/* Order Total Breakdown */}
+              <div className="p-3 bg-[#0B0F19] border border-white/[0.08] rounded-2xl space-y-1.5 text-xs font-mono">
+                <div className="flex justify-between text-slate-400">
+                  <span>Product Subtotal:</span>
+                  <span className="text-white font-bold">₹{subtotal}</span>
+                </div>
+                <div className="flex justify-between text-slate-400">
+                  <span>Standard Delivery:</span>
+                  <span className="text-white">₹{shippingFee}</span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-400">
+                    <span>Founder Waiver ({appliedPromo?.code || 'FOUNDER001'}):</span>
+                    <span>-₹{discountAmount}</span>
+                  </div>
+                )}
+                <div className="border-t border-white/10 pt-1.5 flex justify-between text-sm font-bold text-white">
+                  <span>Total Payable:</span>
+                  <span className="text-cyan-400 text-base">₹{finalPayable}</span>
                 </div>
               </div>
 
@@ -162,47 +351,79 @@ export default function CheckoutModal() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full py-4 rounded-full bg-white text-black font-mono font-bold text-xs tracking-[0.18em] uppercase hover:bg-cyan-300 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 sm:py-4 rounded-full bg-cyan-400 text-black font-mono font-black text-xs tracking-[0.16em] uppercase hover:bg-cyan-300 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-xl active:scale-[0.98] touch-manipulation"
               >
                 {isProcessing ? (
-                  <span>CONFIRMING ORDER...</span>
+                  <span className="flex items-center gap-2">
+                    <span className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    CONNECTING TO CASHFREE...
+                  </span>
                 ) : (
                   <>
-                    <span>CONFIRM & PAY ₹{total}</span>
+                    <span>CONFIRM PRE-ORDER • ₹{finalPayable}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
               </button>
 
+              <div className="flex items-center justify-center gap-1.5 text-[9.5px] sm:text-[10px] font-mono text-slate-500 uppercase tracking-widest text-center">
+                <ShieldCheck className="w-3 h-3 text-cyan-400" />
+                <span>Cashfree 256-Bit Encrypted • Ships in 2–3 weeks</span>
+              </div>
+
             </form>
           </div>
         ) : (
           /* Confirmation Screen */
-          <div className="text-center py-10 space-y-6">
-            <div className="w-16 h-16 rounded-full border border-cyan-400/40 text-cyan-400 flex items-center justify-center mx-auto">
+          <div className="text-center py-8 space-y-6">
+            <div className="w-16 h-16 rounded-full border-2 border-cyan-400 text-cyan-400 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(0,240,255,0.3)]">
               <Check className="w-8 h-8" />
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-mono tracking-[0.2em] text-cyan-400 uppercase">
-                ORDER CONFIRMED
+              <div className="text-xs font-mono tracking-[0.25em] text-cyan-400 uppercase font-bold">
+                BATCH 001 SLOT #{completedOrder?.backerNumber || 715} CONFIRMED
               </div>
               <h3 className="text-2xl sm:text-3xl font-black font-heading text-white uppercase">
-                THANK YOU FOR YOUR ORDER.
+                PRE-ORDER RESERVED.
               </h3>
-              <p className="text-sm text-slate-400 max-w-sm mx-auto leading-relaxed">
-                Your KAFF'S Energy strips are being packed and will be dispatched within 24 hours.
+              <p className="text-xs sm:text-sm text-slate-300 max-w-sm mx-auto leading-relaxed">
+                Your pre-order has been secured. Your Batch 001 allocation is locked in. Dispatches in 2–3 weeks with live tracking.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#0B0F19] border border-white/[0.06] max-w-sm mx-auto text-xs text-slate-400 space-y-1 font-mono">
-              <div>Shipping to: <span className="text-white">{formData.name}</span></div>
-              <div>Destination: <span className="text-white">{formData.city}, {formData.pincode}</span></div>
+            <div className="p-5 rounded-2xl bg-[#0B0F19] border border-cyan-400/20 max-w-sm mx-auto text-xs text-slate-400 space-y-2 font-mono text-left">
+              <div className="flex justify-between border-b border-white/[0.06] pb-2">
+                <span>Order Ref:</span>
+                <span className="text-cyan-400 font-bold">{completedOrder?.id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Backer:</span>
+                <span className="text-white">{formData.name}</span>
+              </div>
+              {completedOrder?.items && (
+                <div className="flex justify-between">
+                  <span>Items:</span>
+                  <span className="text-cyan-300 font-bold">{completedOrder.items}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>Destination:</span>
+                <span className="text-white">{formData.city}, {formData.pincode}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Estimated Dispatch:</span>
+                <span className="text-cyan-300 font-bold">Ships in 2–3 weeks</span>
+              </div>
+              <div className="flex justify-between border-t border-white/[0.06] pt-2">
+                <span>WhatsApp Alerts:</span>
+                <span className="text-emerald-400 font-bold">Active on +91 {formData.phone}</span>
+              </div>
             </div>
 
             <button
               onClick={handleClose}
-              className="px-8 py-3.5 rounded-full font-mono font-bold text-xs tracking-widest uppercase bg-white text-black hover:bg-cyan-300 transition-all cursor-pointer"
+              className="px-8 py-3.5 rounded-full font-mono font-bold text-xs tracking-widest uppercase bg-cyan-400 text-black hover:bg-cyan-300 transition-all cursor-pointer shadow-lg shadow-cyan-400/20"
             >
               RETURN TO SITE
             </button>

@@ -59,9 +59,9 @@ export default function ProductFeature() {
               </div>
             </div>
 
-            {/* Flavor Mentioned Quietly Once */}
-            <div className="pt-2 text-xs font-mono tracking-widest text-slate-400 uppercase">
-              Available in Cool Mint.
+            {/* Flavors Mentioned */}
+            <div className="pt-2 text-xs font-mono tracking-widest text-cyan-400 uppercase">
+              Available in 2 Signature Flavors: ❄️ Cool Mint & ☕ Coffee Clash
             </div>
 
           </div>

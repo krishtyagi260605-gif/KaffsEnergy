@@ -1,6 +1,29 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const CartContext = createContext();
+const defaultContext = {
+  cartItems: [],
+  isCartOpen: false,
+  setIsCartOpen: () => {},
+  isCheckoutOpen: false,
+  setIsCheckoutOpen: () => {},
+  addToCart: () => {},
+  removeFromCart: () => {},
+  updateQuantity: () => {},
+  clearCart: () => {},
+  subtotal: 0,
+  discountAmount: 0,
+  shippingFee: 0,
+  total: 0,
+  totalItemCount: 0,
+  appliedPromo: {
+    code: 'FOUNDER001',
+    discountAmount: 40,
+    label: 'Founder Delivery Waiver (-₹40)',
+  },
+  setAppliedPromo: () => {},
+};
+
+const CartContext = createContext(defaultContext);
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState(() => {
@@ -14,7 +37,13 @@ export function CartProvider({ children }) {
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [appliedPromo, setAppliedPromo] = useState(null);
+  
+  // Auto-applied Founder Batch 1 ₹40 Delivery Waiver Coupon
+  const [appliedPromo, setAppliedPromo] = useState({
+    code: 'FOUNDER001',
+    discountAmount: 40,
+    label: 'Founder Delivery Waiver (-₹40)',
+  });
 
   useEffect(() => {
     try {
@@ -23,8 +52,9 @@ export function CartProvider({ children }) {
   }, [cartItems]);
 
   const addToCart = (product, packSize, flavor, price) => {
+    const selectedFlavor = flavor || 'Cool Mint';
     setCartItems((prev) => {
-      const itemId = `${product.id}-${packSize}-${flavor}`;
+      const itemId = `${product.id}-${packSize}-${selectedFlavor}`;
       const existing = prev.find((item) => item.id === itemId);
       if (existing) {
         return prev.map((item) =>
@@ -40,11 +70,11 @@ export function CartProvider({ children }) {
           caffeine: '40mg',
           packSize: packSize,
           stripCount: packSize, // 5 or 10
-          flavor: flavor || 'Cool Mint',
+          flavor: selectedFlavor, // 'Cool Mint' or 'Coffee Clash'
           price: price,
           quantity: 1,
-          badge: packSize === 10 ? 'BEST VALUE • FREE SHIPPING' : 'STARTER PACK',
-          color: 'cyan',
+          badge: packSize === 10 ? 'BEST VALUE' : 'STARTER PACK',
+          color: selectedFlavor === 'Coffee Clash' ? 'amber' : 'cyan',
         },
       ];
     });
@@ -69,14 +99,16 @@ export function CartProvider({ children }) {
 
   const clearCart = () => {
     setCartItems([]);
-    setAppliedPromo(null);
   };
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const discountAmount = appliedPromo ? Math.round(subtotal * (appliedPromo.discountPercent / 100)) : 0;
-  // Free shipping on orders of ₹399 or higher
-  const shippingFee = subtotal >= 399 || cartItems.length === 0 ? 0 : 49;
-  const total = Math.max(0, subtotal - discountAmount + shippingFee);
+  
+  // Standard delivery is ₹40, fully waived with FOUNDER001 promo coupon
+  const shippingFee = cartItems.length > 0 ? 40 : 0;
+  const discountAmount = appliedPromo && cartItems.length > 0 ? (appliedPromo.discountAmount || 40) : 0;
+  
+  // Total keeps your product price intact: ₹229 for 5-pack, ₹399 for 10-pack
+  const total = Math.max(0, subtotal + shippingFee - discountAmount);
 
   const totalItemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -108,8 +140,5 @@ export function CartProvider({ children }) {
 
 export function useCart() {
   const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
+  return context || defaultContext;
 }

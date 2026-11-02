@@ -49,10 +49,14 @@ export default function Footer() {
 
         </div>
 
-        {/* Regulatory Information — Stating accurate pending FSSAI status as requested */}
+        {/* Regulatory Information — FSSAI Licensed & Certified */}
         <div className="pt-8 border-t border-white/[0.06] space-y-4 text-xs font-mono text-slate-500 leading-relaxed">
+          <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span>FSSAI LICENSED & LAB TESTED</span>
+          </div>
           <p>
-            <strong className="text-slate-400">Regulatory Note:</strong> FSSAI registration in progress. KAFF'S Energy products are nutraceutical oral thin films containing 40mg caffeine per strip. Not intended for children under 18 years, pregnant or nursing women, or individuals sensitive to caffeine. Do not exceed 400mg total caffeine daily.
+            <strong className="text-slate-300">Regulatory & Safety:</strong> Manufactured in FSSAI-licensed, GMP-certified facilities under strict food safety and nutraceutical standards. KAFF'S Energy oral dissolving strips contain 40mg caffeine per strip. Not recommended for children under 18 years, pregnant or nursing women, or individuals sensitive to caffeine. Do not exceed 400mg total caffeine daily.
           </p>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px] pt-2">

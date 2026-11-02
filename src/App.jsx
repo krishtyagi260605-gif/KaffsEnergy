@@ -11,6 +11,7 @@ import FAQSection from './components/FAQSection';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
+import MobileStickyBar from './components/MobileStickyBar';
 
 export default function App() {
   return (
@@ -40,8 +41,11 @@ export default function App() {
         {/* 06 — Final Brand Statement (STAY SHARP. STAY MOVING. / KAFF'S ENERGY.) */}
         <BrandClosing />
 
-        {/* 07 — Footer (Clean, Editorial, FSSAI Registration in Progress) */}
+        {/* 07 — Footer (Clean, Editorial, FSSAI Licensed & Certified) */}
         <Footer />
+
+        {/* Mobile Floating Quick-Buy Bar */}
+        <MobileStickyBar />
 
         {/* Preserved E-Commerce Modals */}
         <CartDrawer />
