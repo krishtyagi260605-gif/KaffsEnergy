@@ -17,12 +17,12 @@ export default function CheckoutModal() {
 
   const [paymentMethod, setPaymentMethod] = useState('upi'); // upi, card
   const [formData, setFormData] = useState({
-    name: 'Krish Tyagi',
-    phone: '9876543210',
-    email: 'krish@kaffs.in',
-    address: 'Sector 14 / Tech Park',
-    city: 'Ghaziabad',
-    pincode: '201002',
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+    city: '',
+    pincode: '',
   });
   const [isSuccess, setIsSuccess] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
