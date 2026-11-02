@@ -15,7 +15,7 @@ export default function CheckoutModal() {
     clearCart,
   } = useCart();
 
-  const [paymentMethod, setPaymentMethod] = useState('upi'); // upi, card, cod
+  const [paymentMethod, setPaymentMethod] = useState('upi'); // upi, card
   const [formData, setFormData] = useState({
     name: 'Krish Tyagi',
     phone: '9876543210',
@@ -37,22 +37,6 @@ export default function CheckoutModal() {
     e.preventDefault();
     setIsProcessing(true);
     setErrorMessage('');
-
-    if (paymentMethod === 'cod') {
-      setTimeout(() => {
-        setIsProcessing(false);
-        setCompletedOrder({
-          id: `KAFFS-B001-${Math.floor(1000 + Math.random() * 9000)}`,
-          backerNumber: Math.floor(715 + Math.random() * 20),
-          method: 'Cash on Delivery',
-          amount: finalPayable,
-          items: cartItems.map((i) => `${i.packSize} Strips (${i.flavor || 'Cool Mint'})`).join(', '),
-        });
-        setIsSuccess(true);
-        clearCart();
-      }, 1000);
-      return;
-    }
 
     try {
       // 1. Call backend endpoint to initialize Cashfree session
@@ -272,55 +256,42 @@ export default function CheckoutModal() {
                 </div>
               </div>
 
-              {/* Payment Method Selector */}
+              {/* Payment Method Selector — 100% Prepaid */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-[10px] sm:text-[11px] font-mono text-slate-400 uppercase tracking-wider block font-bold">
                     Payment Method
                   </label>
-                  <span className="text-[9.5px] sm:text-[10px] font-mono text-cyan-400">
-                    ⚡ Instant UPI / Cards
+                  <span className="text-[9.5px] sm:text-[10px] font-mono text-cyan-400 font-bold">
+                    🔒 100% Prepaid Exclusive
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('upi')}
-                    className={`py-2.5 sm:py-3 px-2 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
+                    className={`py-3 px-3 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
                       paymentMethod === 'upi'
                         ? 'bg-cyan-400 text-black border-cyan-400 font-black shadow-lg shadow-cyan-400/20'
                         : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
                     }`}
                   >
-                    <span>UPI</span>
-                    <span className="text-[8.5px] sm:text-[9px] opacity-80">GPay/PhonePe</span>
+                    <span className="flex items-center gap-1 font-bold">⚡ Instant UPI</span>
+                    <span className="text-[8.5px] sm:text-[9px] opacity-80">GPay • PhonePe • Paytm</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('card')}
-                    className={`py-2.5 sm:py-3 px-2 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
+                    className={`py-3 px-3 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
                       paymentMethod === 'card'
                         ? 'bg-cyan-400 text-black border-cyan-400 font-black shadow-lg shadow-cyan-400/20'
                         : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
                     }`}
                   >
-                    <span>Cards</span>
-                    <span className="text-[8.5px] sm:text-[9px] opacity-80">NetBanking</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('cod')}
-                    className={`py-2.5 sm:py-3 px-2 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
-                      paymentMethod === 'cod'
-                        ? 'bg-white text-black border-white font-bold'
-                        : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <span>COD</span>
-                    <span className="text-[8.5px] sm:text-[9px] opacity-80">Cash At Door</span>
+                    <span className="flex items-center gap-1 font-bold">💳 Cards / NetBanking</span>
+                    <span className="text-[8.5px] sm:text-[9px] opacity-80">Visa • MC • RuPay • Banks</span>
                   </button>
                 </div>
               </div>
@@ -360,7 +331,7 @@ export default function CheckoutModal() {
                   </span>
                 ) : (
                   <>
-                    <span>CONFIRM PRE-ORDER • ₹{finalPayable}</span>
+                    <span>PAY & SECURE PRE-ORDER • ₹{finalPayable}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
@@ -368,7 +339,7 @@ export default function CheckoutModal() {
 
               <div className="flex items-center justify-center gap-1.5 text-[9.5px] sm:text-[10px] font-mono text-slate-500 uppercase tracking-widest text-center">
                 <ShieldCheck className="w-3 h-3 text-cyan-400" />
-                <span>Cashfree 256-Bit Encrypted • Ships in 2–3 weeks</span>
+                <span>Cashfree 256-Bit Encrypted • 100% Prepaid • Ships in 2–3 weeks</span>
               </div>
 
             </form>

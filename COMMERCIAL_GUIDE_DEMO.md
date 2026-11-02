@@ -4,7 +4,7 @@
 **Cost Baseline:** 
 - **Pack of 5 (MRP ₹229):** ₹100 Making + ₹15 Packaging = **₹115 Total Product Cost**
 - **Pack of 10 (MRP ₹399):** ₹200 Making + ₹35 Packaging = **₹235 Total Product Cost**
-**Payment Options:** Includes both **Prepaid (UPI/Card)** and **Cash on Delivery (COD)**  
+**Payment Options:** **100% Prepaid (UPI / Cards / Net Banking)** via Cashfree Secured PG (Zero RTO Loss Strategy)  
 **Sales Channels:** Own Website | Amazon India | Quick Commerce (Blinkit & Zepto)  
 **PDF Document:** [KAFFS_Energy_Commercial_Model_Demo.pdf](./KAFFS_Energy_Commercial_Model_Demo.pdf)
 
