@@ -1,8 +1,114 @@
 // Serverless API for KAFF'S Energy Order Management & Admin Portal
 const ADMIN_DEFAULT_PIN = process.env.ADMIN_PIN || 'kaffs2026';
 
+// Pre-seeded with verified live Cashfree founder orders
+const INITIAL_ORDERS = [
+  {
+    id: 'KAFFS-1793787713500',
+    cf_order_id: '7356652287',
+    created_at: '2026-11-04T15:51:54.000Z',
+    customer_name: 'Shristi',
+    customer_phone: '9971175639',
+    customer_email: 'varmashristi@gmail.com',
+    customer_address: '',
+    customer_city: 'Ghaziabad',
+    customer_pincode: '201002',
+    full_address: 'Ghaziabad, 201002',
+    items: '1x Pack of 5 (☕ Coffee Clash)',
+    amount: 229,
+    payment_status: 'PAID',
+    delivery_status: 'UNDELIVERED',
+    notes: 'Batch 001 Pre-Order: Ghaziabad, 201002 [5pk-Coffee Clash]',
+  },
+  {
+    id: 'KAFFS-1793779000411',
+    cf_order_id: '7355337297',
+    created_at: '2026-11-04T13:26:41.000Z',
+    customer_name: 'Abhishek Mehta',
+    customer_phone: '9711882195',
+    customer_email: 'abhimht9@gmail.com',
+    customer_address: '',
+    customer_city: 'Ghaziabad',
+    customer_pincode: '201017',
+    full_address: 'Ghaziabad, 201017',
+    items: '1x Pack of 5 (❄️ Cool Mint)',
+    amount: 229,
+    payment_status: 'PAID',
+    delivery_status: 'UNDELIVERED',
+    notes: 'Batch 001 Pre-Order: Ghaziabad , 201017 [5pk-Cool Mint]',
+  },
+  {
+    id: 'KAFFS-1793709401741',
+    cf_order_id: '7348195259',
+    created_at: '2026-11-03T18:06:42.000Z',
+    customer_name: 'Vaibhav Tyagi',
+    customer_phone: '7827328861',
+    customer_email: 'vaibhavvatatyagi@gmail.com',
+    customer_address: '',
+    customer_city: 'Ghaziabad',
+    customer_pincode: '201017',
+    full_address: 'Ghaziabad, 201017',
+    items: '1x Pack of 10 (☕ Coffee Clash)',
+    amount: 399,
+    payment_status: 'PAID',
+    delivery_status: 'UNDELIVERED',
+    notes: 'Batch 001 Pre-Order: GHAZIABAD, 201017 [10pk-Coffee Clash]',
+  },
+  {
+    id: 'KAFFS-1793703151852',
+    cf_order_id: '7347488441',
+    created_at: '2026-11-03T16:22:32.000Z',
+    customer_name: 'Krish Tyagi (Founder Order)',
+    customer_phone: '9315060525',
+    customer_email: 'krishtyagi260605@gmail.com',
+    customer_address: 'Raj Nagar Extension',
+    customer_city: 'Ghaziabad',
+    customer_pincode: '201017',
+    full_address: 'Raj Nagar Extension, Ghaziabad - 201017',
+    items: '1x Pack of 5 (❄️ Cool Mint)',
+    amount: 229,
+    payment_status: 'PAID',
+    delivery_status: 'UNDELIVERED',
+    notes: 'Batch 001 Pre-Order: Raj Nagar Extension, 201017 [5pk-Cool Mint]',
+  },
+  {
+    id: 'KAFFS-1793645103745',
+    cf_order_id: '7340729294',
+    created_at: '2026-11-03T00:15:04.000Z',
+    customer_name: 'Krish Tyagi',
+    customer_phone: '9315060525',
+    customer_email: 'krishtyagi726@gmail.com',
+    customer_address: '',
+    customer_city: 'Ghaziabad',
+    customer_pincode: '201017',
+    full_address: 'Ghaziabad - 201017',
+    items: '1x Pack of 5 (❄️ Cool Mint)',
+    amount: 229,
+    payment_status: 'PAID',
+    delivery_status: 'UNDELIVERED',
+    notes: 'Batch 001 Pre-Order: ghaziabad, 201017 [5pk-Cool Mint]',
+  },
+  {
+    id: 'KAFFS-1793645014295',
+    cf_order_id: '7340724624',
+    created_at: '2026-11-03T00:13:35.000Z',
+    customer_name: 'Krish Tyagi',
+    customer_phone: '9315060525',
+    customer_email: 'krishtyagi726@gmail.com',
+    customer_address: '',
+    customer_city: 'Ghaziabad',
+    customer_pincode: '201017',
+    full_address: 'Ghaziabad - 201017',
+    items: '1x Pack of 10 (❄️ Cool Mint)',
+    amount: 399,
+    payment_status: 'PAID',
+    delivery_status: 'UNDELIVERED',
+    notes: 'Batch 001 Pre-Order: ghaziabad, 201017 [10pk-Cool Mint]',
+  },
+];
+
 // In-memory fallback cache across warm serverless invocations
-let memoryOrders = [];
+let memoryOrders = [...INITIAL_ORDERS];
 
 async function getStoredOrders() {
   // 1. If Upstash Redis is configured, fetch from Redis
@@ -13,14 +119,15 @@ async function getStoredOrders() {
       });
       const data = await res.json();
       if (data && data.result) {
-        return typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+        const parsed = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (err) {
       console.warn('Upstash fetch failed, using memory cache:', err.message);
     }
   }
 
-  return memoryOrders;
+  return memoryOrders.length > 0 ? memoryOrders : INITIAL_ORDERS;
 }
 
 async function saveStoredOrders(orders) {
