@@ -42,6 +42,13 @@ export default function AdminPortal({ onExit }) {
     notes: '',
   });
 
+  // Cashfree Bulk Import Modal State
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importMode, setImportMode] = useState('ORDER_IDS'); // 'ORDER_IDS' | 'QUICK_TEXT'
+  const [importInput, setImportInput] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [importStatusMsg, setImportStatusMsg] = useState('');
+
   // Fetch orders from API on authentication
   useEffect(() => {
     if (isAuthenticated) {
@@ -230,6 +237,117 @@ export default function AdminPortal({ onExit }) {
       notes: order.notes || '',
     });
     setIsModalOpen(true);
+  };
+
+  // Bulk Import Handler
+  const handleBulkImport = async (e) => {
+    e.preventDefault();
+    if (!importInput.trim()) {
+      alert('Please enter order data to import.');
+      return;
+    }
+    setIsImporting(true);
+    setImportStatusMsg('Connecting to Cashfree & processing orders...');
+
+    try {
+      if (importMode === 'ORDER_IDS') {
+        const ids = importInput
+          .split(/[\n,;\s]+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-pin': DEFAULT_PIN,
+          },
+          body: JSON.stringify({
+            action: 'IMPORT_CASHFREE_IDS',
+            order_ids: ids,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          setImportStatusMsg(`🎉 Success! Imported ${data.importedCount || 0} order(s) from Cashfree!`);
+          if (data.orders) setOrders(data.orders);
+          setTimeout(() => {
+            setIsImportModalOpen(false);
+            setImportStatusMsg('');
+            setImportInput('');
+          }, 1500);
+        } else {
+          setImportStatusMsg(`Error: ${data.error || 'Failed to import orders'}`);
+        }
+      } else {
+        // QUICK_TEXT parser: parse rows of Name, Phone, Amount, City
+        const lines = importInput.split('\n').filter((l) => l.trim());
+        const parsedOrders = [];
+
+        for (const line of lines) {
+          const parts = line.split(/[,\t|]+/).map((s) => s.trim());
+          if (parts.length === 0) continue;
+
+          // Attempt to detect 10-digit phone
+          const phoneIdx = parts.findIndex((p) => p.replace(/\D/g, '').length >= 10);
+          const phone = phoneIdx >= 0 ? parts[phoneIdx].replace(/\D/g, '').slice(-10) : '';
+          const name = phoneIdx > 0 ? parts[0] : (parts[0] || 'Valued Backer');
+          const amountIdx = parts.findIndex((p) => /^\d{3,4}$/.test(p));
+          const amount = amountIdx >= 0 ? Number(parts[amountIdx]) : 229;
+          const city = parts.find((p, idx) => idx !== phoneIdx && idx !== amountIdx && isNaN(p) && p !== name) || '';
+
+          if (phone) {
+            parsedOrders.push({
+              id: `KAFFS-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              customer_name: name,
+              customer_phone: phone,
+              amount: amount,
+              customer_city: city,
+              full_address: city ? `${city}` : '',
+              items: amount >= 399 ? '1x Pack of 10' : '1x Pack of 5 (Cool Mint)',
+              delivery_status: 'UNDELIVERED',
+              payment_status: 'PAID',
+            });
+          }
+        }
+
+        if (parsedOrders.length === 0) {
+          setImportStatusMsg('Could not find phone numbers. Please include 10-digit phone number in each line.');
+          setIsImporting(false);
+          return;
+        }
+
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-pin': DEFAULT_PIN,
+          },
+          body: JSON.stringify({
+            action: 'BULK_ADD',
+            orders: parsedOrders,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          setImportStatusMsg(`🎉 Success! Added ${parsedOrders.length} order(s)!`);
+          if (data.orders) setOrders(data.orders);
+          setTimeout(() => {
+            setIsImportModalOpen(false);
+            setImportStatusMsg('');
+            setImportInput('');
+          }, 1500);
+        } else {
+          setImportStatusMsg(`Error: ${data.error || 'Failed to add orders'}`);
+        }
+      }
+    } catch (err) {
+      setImportStatusMsg(`Error: ${err.message}`);
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   // Copy Courier Ready Label
@@ -542,7 +660,19 @@ export default function AdminPortal({ onExit }) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => {
+                  setIsImportModalOpen(true);
+                  setImportStatusMsg('');
+                }}
+                className="px-3.5 py-2.5 rounded-xl bg-amber-400 text-black font-mono font-black text-xs uppercase tracking-wider hover:bg-amber-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-lg shadow-amber-400/20 active:scale-95"
+                title="Import existing orders from Cashfree"
+              >
+                <span>⚡</span>
+                <span>Import Cashfree Orders</span>
+              </button>
+
               <button
                 onClick={openAddModal}
                 className="px-4 py-2.5 rounded-xl bg-cyan-400 text-black font-mono font-black text-xs uppercase tracking-wider hover:bg-cyan-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-lg shadow-cyan-400/20 active:scale-95"
@@ -565,23 +695,37 @@ export default function AdminPortal({ onExit }) {
 
         {/* Order List */}
         {filteredOrders.length === 0 ? (
-          <div className="p-12 text-center rounded-3xl bg-[#0B0F19] border border-white/[0.08] space-y-4">
+          <div className="p-10 sm:p-14 text-center rounded-3xl bg-[#0B0F19] border border-white/[0.08] space-y-6">
             <div className="text-4xl">📦</div>
             <div className="space-y-1">
-              <h3 className="text-lg font-bold text-white">No Orders Found</h3>
+              <h3 className="text-lg font-bold text-white">No Orders Displayed Yet</h3>
               <p className="text-xs text-slate-400 font-mono max-w-md mx-auto">
                 {searchQuery
                   ? 'No orders match your search query.'
-                  : 'No orders recorded yet. When a customer checks out, their full address and order items appear here automatically.'}
+                  : 'New orders placed on the store will appear here automatically.'}
               </p>
             </div>
+
+            {/* Quick Import Card for Previous Orders */}
             {!searchQuery && (
-              <button
-                onClick={openAddModal}
-                className="px-5 py-3 rounded-full bg-cyan-400 text-black font-mono font-bold text-xs uppercase tracking-wider hover:bg-cyan-300 transition-all cursor-pointer inline-flex items-center gap-2"
-              >
-                <span>➕ Add Existing / Offline Order</span>
-              </button>
+              <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 max-w-lg mx-auto text-left space-y-3">
+                <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
+                  <span>⚡</span>
+                  <span>Have 5–6 existing orders in your Cashfree dashboard?</span>
+                </div>
+                <p className="text-xs text-slate-300 font-mono leading-relaxed">
+                  Import your previous Cashfree orders right now with 1 click! Paste their Order IDs or phone numbers to track delivery and WhatsApp them.
+                </p>
+                <button
+                  onClick={() => {
+                    setIsImportModalOpen(true);
+                    setImportStatusMsg('');
+                  }}
+                  className="w-full py-3.5 rounded-xl bg-amber-400 text-black font-mono font-black text-xs uppercase tracking-wider hover:bg-amber-300 transition-all cursor-pointer shadow-lg shadow-amber-400/20 active:scale-98"
+                >
+                  ⚡ IMPORT PREVIOUS ORDERS FROM CASHFREE ➔
+                </button>
+              </div>
             )}
           </div>
         ) : (
@@ -899,6 +1043,115 @@ export default function AdminPortal({ onExit }) {
                   className="px-6 py-2.5 rounded-xl bg-cyan-400 text-black font-mono font-black uppercase tracking-wider hover:bg-cyan-300 transition-all cursor-pointer shadow-lg shadow-cyan-400/20"
                 >
                   Save Order
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* CASHFREE BULK IMPORT MODAL */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#0B0F19] border border-amber-500/40 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">⚡</span>
+                <h3 className="text-lg font-black font-heading text-white uppercase tracking-tight">
+                  Import Cashfree Orders
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsImportModalOpen(false)}
+                className="text-slate-400 hover:text-white text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Mode Switcher */}
+            <div className="flex rounded-xl bg-black/40 p-1 border border-white/10 text-xs font-mono">
+              <button
+                type="button"
+                onClick={() => setImportMode('ORDER_IDS')}
+                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer font-bold ${
+                  importMode === 'ORDER_IDS'
+                    ? 'bg-amber-400 text-black shadow'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                1. By Cashfree Order IDs
+              </button>
+              <button
+                type="button"
+                onClick={() => setImportMode('QUICK_TEXT')}
+                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer font-bold ${
+                  importMode === 'QUICK_TEXT'
+                    ? 'bg-amber-400 text-black shadow'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                2. By Phone / Text Paste
+              </button>
+            </div>
+
+            {importStatusMsg && (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-300 font-mono">
+                {importStatusMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleBulkImport} className="space-y-4 text-xs font-mono">
+              {importMode === 'ORDER_IDS' ? (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-slate-400 block font-bold">
+                    Paste Order IDs (One per line or comma-separated)
+                  </label>
+                  <p className="text-[11px] text-slate-400">
+                    Copy the Order IDs from your Cashfree screen (e.g. <code className="text-cyan-400">kaffs_...</code>). The portal will query Cashfree to pull their name, phone, amount, and notes!
+                  </p>
+                  <textarea
+                    rows={5}
+                    value={importInput}
+                    onChange={(e) => setImportInput(e.target.value)}
+                    placeholder="kaffs_1730765943201&#10;kaffs_1730768912340&#10;kaffs_1730771239841"
+                    className="w-full px-3 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:border-amber-400 focus:outline-none"
+                    required
+                  />
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-slate-400 block font-bold">
+                    Paste Customer Details (One order per line)
+                  </label>
+                  <p className="text-[11px] text-slate-400">
+                    Format: <code className="text-cyan-400">Name, 10-Digit Phone, Amount, City</code>
+                  </p>
+                  <textarea
+                    rows={5}
+                    value={importInput}
+                    onChange={(e) => setImportInput(e.target.value)}
+                    placeholder="Krish Tyagi, 9315060525, 229, Delhi&#10;Aman, 9876543210, 399, Mumbai"
+                    className="w-full px-3 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:border-amber-400 focus:outline-none"
+                    required
+                  />
+                </div>
+              )}
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsImportModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isImporting}
+                  className="px-6 py-2.5 rounded-xl bg-amber-400 text-black font-mono font-black uppercase tracking-wider hover:bg-amber-300 transition-all cursor-pointer shadow-lg shadow-amber-400/20 disabled:opacity-50"
+                >
+                  {isImporting ? 'IMPORTING...' : 'IMPORT ORDERS NOW ➔'}
                 </button>
               </div>
             </form>

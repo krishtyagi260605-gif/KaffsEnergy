@@ -82,11 +82,124 @@ export default async function handler(req, res) {
   }
 
   // 2. CREATE OR SYNC ORDER
-  // When a checkout occurs, frontend or webhook can submit order details here
+  // Supports single order, bulk list, or automatic Cashfree order IDs lookup
   if (req.method === 'POST') {
     try {
-      const orderData = req.body;
+      const body = req.body;
 
+      // 2A. BULK IMPORT FROM CASHFREE BY ORDER IDs
+      if (body.action === 'IMPORT_CASHFREE_IDS' && Array.isArray(body.order_ids)) {
+        if (clientPin !== ADMIN_DEFAULT_PIN) {
+          return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
+        }
+
+        const envMode = process.env.CASHFREE_ENV || 'production';
+        const baseUrl = envMode === 'production'
+          ? 'https://api.cashfree.com/pg'
+          : 'https://sandbox.cashfree.com/pg';
+        const appId = process.env.CASHFREE_APP_ID;
+        const secretKey = process.env.CASHFREE_SECRET_KEY;
+
+        const orders = await getStoredOrders();
+        const imported = [];
+
+        for (const rawId of body.order_ids) {
+          const cleanId = String(rawId || '').trim();
+          if (!cleanId) continue;
+
+          try {
+            const cfRes = await fetch(`${baseUrl}/orders/${cleanId}`, {
+              method: 'GET',
+              headers: {
+                'x-client-id': appId,
+                'x-client-secret': secretKey,
+                'x-api-version': '2023-08-01',
+              },
+            });
+
+            if (cfRes.ok) {
+              const cfData = await cfRes.json();
+              const cust = cfData.customer_details || {};
+              const tags = cfData.order_tags || {};
+              const fullAddr = tags.address
+                ? `${tags.address}, ${tags.city || ''} - ${tags.pincode || ''}`
+                : (cfData.order_note || '');
+
+              const orderObj = {
+                id: cfData.order_id || cleanId,
+                cf_order_id: cfData.cf_order_id || null,
+                created_at: cfData.created_at || new Date().toISOString(),
+                customer_name: cust.customer_name || 'Customer',
+                customer_phone: cust.customer_phone || '',
+                customer_email: cust.customer_email || '',
+                customer_address: tags.address || '',
+                customer_city: tags.city || '',
+                customer_pincode: tags.pincode || '',
+                full_address: fullAddr,
+                items: tags.items || (Number(cfData.order_amount) >= 399 ? '1x Pack of 10' : '1x Pack of 5 (Cool Mint)'),
+                amount: Number(cfData.order_amount) || 229,
+                payment_status: cfData.order_status || 'PAID',
+                delivery_status: 'UNDELIVERED',
+                notes: cfData.order_note || '',
+              };
+
+              const existingIdx = orders.findIndex((o) => o.id === orderObj.id);
+              if (existingIdx >= 0) {
+                orders[existingIdx] = { ...orders[existingIdx], ...orderObj };
+              } else {
+                orders.unshift(orderObj);
+              }
+              imported.push(orderObj);
+            }
+          } catch (err) {
+            console.warn(`Failed to import order ${cleanId}:`, err.message);
+          }
+        }
+
+        await saveStoredOrders(orders);
+        return res.status(200).json({ success: true, importedCount: imported.length, orders });
+      }
+
+      // 2B. BULK ADD MANUAL ORDERS
+      if (body.action === 'BULK_ADD' && Array.isArray(body.orders)) {
+        if (clientPin !== ADMIN_DEFAULT_PIN) {
+          return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
+        }
+
+        const orders = await getStoredOrders();
+        for (const o of body.orders) {
+          if (!o.customer_phone) continue;
+          const orderObj = {
+            id: o.id || `KAFFS-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            created_at: o.created_at || new Date().toISOString(),
+            customer_name: o.customer_name || 'Customer',
+            customer_phone: o.customer_phone || '',
+            customer_email: o.customer_email || '',
+            customer_address: o.customer_address || o.address || '',
+            customer_city: o.customer_city || o.city || '',
+            customer_pincode: o.customer_pincode || o.pincode || '',
+            full_address: o.full_address || `${o.customer_address || ''}, ${o.customer_city || ''} - ${o.customer_pincode || ''}`,
+            items: o.items || (Number(o.amount) >= 399 ? '1x Pack of 10' : '1x Pack of 5 (Cool Mint)'),
+            amount: Number(o.amount) || 229,
+            payment_status: o.payment_status || 'PAID',
+            delivery_status: o.delivery_status || 'UNDELIVERED',
+            notes: o.notes || '',
+          };
+
+          const existingIdx = orders.findIndex((ex) => ex.id === orderObj.id);
+          if (existingIdx >= 0) {
+            orders[existingIdx] = { ...orders[existingIdx], ...orderObj };
+          } else {
+            orders.unshift(orderObj);
+          }
+        }
+
+        await saveStoredOrders(orders);
+        return res.status(200).json({ success: true, total: orders.length, orders });
+      }
+
+      // 2C. SINGLE ORDER SAVE
+      const orderData = body;
       if (!orderData || !orderData.customer_phone) {
         return res.status(400).json({ error: 'Missing required order fields' });
       }
