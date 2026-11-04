@@ -86,6 +86,9 @@ export default function CheckoutModal() {
 
     try {
       // 1. Call backend endpoint to initialize Cashfree session
+      const itemsSummary = cartItems.map((i) => `${i.packSize}pk ${i.flavor || 'Cool Mint'}`).join(', ');
+      const fullDeliveryAddress = `${formData.address}, ${formData.city} - ${formData.pincode}`;
+
       const response = await fetch('/api/create-cashfree-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,7 +97,11 @@ export default function CheckoutModal() {
           customer_name: formData.name,
           customer_phone: formData.phone,
           customer_email: formData.email,
-          order_note: `Batch 001 Pre-Order: ${formData.city}, ${formData.pincode} [${cartItems.map((i) => `${i.packSize}pk-${i.flavor}`).join('; ')}]`,
+          customer_address: formData.address,
+          customer_city: formData.city,
+          customer_pincode: formData.pincode,
+          order_items: itemsSummary,
+          order_note: `DELIVERY: ${fullDeliveryAddress} | ITEMS: ${itemsSummary}`,
         }),
       });
 
