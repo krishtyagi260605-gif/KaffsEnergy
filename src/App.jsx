@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
@@ -12,8 +12,43 @@ import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
 import MobileStickyBar from './components/MobileStickyBar';
+import AdminPortal from './components/AdminPortal';
 
 export default function App() {
+  const [isAdminRoute, setIsAdminRoute] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      return path === '/admin' || path === '/admin/' || hash === '#admin';
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleRouteChange = () => {
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      setIsAdminRoute(path === '/admin' || path === '/admin/' || hash === '#admin');
+    };
+
+    window.addEventListener('popstate', handleRouteChange);
+    window.addEventListener('hashchange', handleRouteChange);
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+      window.removeEventListener('hashchange', handleRouteChange);
+    };
+  }, []);
+
+  const handleExitAdmin = () => {
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.pushState(null, '', '/');
+    }
+    setIsAdminRoute(false);
+  };
+
+  if (isAdminRoute) {
+    return <AdminPortal onExit={handleExitAdmin} />;
+  }
   return (
     <CartProvider>
       <div className="min-h-screen bg-[#050608] text-slate-100 font-sans selection:bg-cyan-400 selection:text-black">

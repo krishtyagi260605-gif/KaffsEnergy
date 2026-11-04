@@ -133,29 +133,51 @@ export default function CheckoutModal() {
         }
 
         // 3. Mark success and show VIP backer confirmation
-        try {
-          const verifyRes = await fetch(`/api/verify-cashfree-order?order_id=${data.order_id}`);
-          const verifyData = await verifyRes.json();
+        const deliveryAddress = `${formData.address}, ${formData.city} - ${formData.pincode}`;
+        const finalOrderDetails = {
+          id: (data.order_id || `KAFFS-${Date.now()}`).toUpperCase(),
+          cfOrderId: data.cf_order_id,
+          backerNumber: Math.floor(715 + Math.random() * 20),
+          method: 'Instant UPI / Card (Cashfree Secured)',
+          amount: finalPayable,
+          status: 'PAID',
+          items: itemsSummary,
+          name: formData.name,
+          phone: formData.phone,
+          address: deliveryAddress,
+        };
 
-          setCompletedOrder({
-            id: (data.order_id || `KAFFS-${Date.now()}`).toUpperCase(),
-            cfOrderId: data.cf_order_id,
-            backerNumber: Math.floor(715 + Math.random() * 20),
-            method: 'Instant UPI / Card (Cashfree Secured)',
-            amount: finalPayable,
-            status: verifyData.order_status || 'PAID',
-            items: cartItems.map((i) => `${i.packSize} Strips (${i.flavor || 'Cool Mint'})`).join(', '),
-          });
-        } catch {
-          setCompletedOrder({
-            id: (data.order_id || `KAFFS-${Date.now()}`).toUpperCase(),
-            cfOrderId: data.cf_order_id,
-            backerNumber: Math.floor(715 + Math.random() * 20),
-            method: 'Instant UPI / Card (Cashfree Secured)',
-            amount: finalPayable,
-            status: 'PAID',
-            items: cartItems.map((i) => `${i.packSize} Strips (${i.flavor || 'Cool Mint'})`).join(', '),
-          });
+        setCompletedOrder(finalOrderDetails);
+
+        // Sync order to Admin backend and localStorage
+        const adminOrderRecord = {
+          id: finalOrderDetails.id,
+          cf_order_id: data.cf_order_id,
+          created_at: new Date().toISOString(),
+          customer_name: formData.name,
+          customer_phone: formData.phone,
+          customer_email: formData.email,
+          customer_address: formData.address,
+          customer_city: formData.city,
+          customer_pincode: formData.pincode,
+          full_address: deliveryAddress,
+          items: itemsSummary,
+          amount: finalPayable,
+          payment_status: 'PAID',
+          delivery_status: 'UNDELIVERED',
+        };
+
+        try {
+          fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(adminOrderRecord),
+          }).catch(console.warn);
+
+          const existingOrders = JSON.parse(localStorage.getItem('kaffs_admin_orders') || '[]');
+          localStorage.setItem('kaffs_admin_orders', JSON.stringify([adminOrderRecord, ...existingOrders]));
+        } catch (e) {
+          console.warn('Local admin sync:', e);
         }
 
         setIsSuccess(true);
@@ -446,6 +468,14 @@ export default function CheckoutModal() {
                 <span>Estimated Dispatch:</span>
                 <span className="text-cyan-300 font-bold">Ships in 2–3 weeks</span>
               </div>
+              {(completedOrder?.address || (formData.address && `${formData.address}, ${formData.city} - ${formData.pincode}`)) && (
+                <div className="border-t border-white/[0.06] pt-2 space-y-0.5">
+                  <span className="text-[10px] text-slate-500 uppercase block">Delivery Address:</span>
+                  <span className="text-white font-mono text-[11px] font-bold block leading-relaxed">
+                    📍 {completedOrder?.address || `${formData.address}, ${formData.city} - ${formData.pincode}`}
+                  </span>
+                </div>
+              )}
               {(completedOrder?.phone || formData.phone) && (
                 <div className="flex justify-between border-t border-white/[0.06] pt-2">
                   <span>Tracking Updates:</span>
