@@ -1,87 +1,59 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { ShoppingBag } from './Icons';
 
-function PremiumCard({ sku, onAddToCart, isFeatured }) {
-  const cardRef = useRef(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+function ProductCard({ sku, onAddToCart, isFeatured }) {
   const [selectedFlavor, setSelectedFlavor] = useState('Cool Mint'); // 'Cool Mint' or 'Coffee Clash'
-
-  const handleMouseMove = (e) => {
-    // Disable 3D tilt on touch screens to prevent stutter during scrolling
-    if (typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches) return;
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -8;
-    const rotateY = ((x - centerX) / centerX) * 8;
-    setTilt({ x: rotateX, y: rotateY });
-  };
-
-  const handleMouseLeave = () => {
-    setTilt({ x: 0, y: 0 });
-  };
 
   const currentImage = selectedFlavor === 'Coffee Clash' ? (sku.coffeeImage || sku.image) : sku.image;
 
   return (
     <div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        transform: `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-        transition: 'transform 0.15s ease-out',
-        transformStyle: 'preserve-3d',
-      }}
-      className={`rounded-3xl p-5 sm:p-8 md:p-10 flex flex-col justify-between relative transition-all duration-300 ${
+      className={`rounded-3xl p-6 sm:p-8 md:p-10 flex flex-col justify-between relative transition-all duration-300 ${
         isFeatured
-          ? 'panel-featured border-cyan-400/40 shadow-[0_0_50px_rgba(0,240,255,0.12)]'
-          : 'panel-dark'
+          ? 'glass-card-featured'
+          : 'glass-panel'
       }`}
     >
       {/* Best Value / SKU Badge */}
       {sku.badge && (
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
-          <span className="text-[9px] sm:text-[10px] font-mono tracking-[0.2em] uppercase font-bold px-2.5 sm:px-3 py-1 rounded-full bg-cyan-400 text-black shadow-lg shadow-cyan-400/20">
+        <div className="absolute top-5 right-5 sm:top-7 sm:right-7 z-20">
+          <span className={`text-[11px] font-bold tracking-wider uppercase px-3 py-1 rounded-full shadow-lg ${
+            isFeatured ? 'bg-cyan-400 text-black' : 'bg-white/10 text-slate-300 border border-white/15'
+          }`}>
             {sku.badge}
           </span>
         </div>
       )}
 
       {/* Card Header Info */}
-      <div className="space-y-1.5 sm:space-y-2 pr-16 sm:pr-0">
-        <h3 className="text-xl sm:text-3xl font-black font-heading text-white uppercase tracking-tight">
+      <div className="space-y-1.5 pr-20 sm:pr-0">
+        <h3 className="text-2xl sm:text-3xl font-black font-heading text-white uppercase tracking-tight">
           {sku.title}
         </h3>
-        <p className="text-[11px] sm:text-xs font-mono tracking-wider text-slate-400 uppercase">
-          {sku.strips} STRIPS • 40MG CAFFEINE PER STRIP
+        <p className="text-xs text-slate-400 font-medium">
+          {sku.strips} Caffeine Strips • 40mg Per Strip
         </p>
       </div>
 
-      {/* Product Packaging Render with dynamic flavor packaging */}
-      <div className="my-4 sm:my-8 flex items-center justify-center relative">
-        <div className={`w-full max-w-[200px] sm:max-w-[240px] aspect-[4/5] flex items-center justify-center rounded-2xl overflow-hidden transition-all duration-500 ${
-          selectedFlavor === 'Coffee Clash' ? 'filter drop-shadow-[0_15px_30px_rgba(245,158,11,0.35)]' : 'filter drop-shadow-[0_15px_30px_rgba(0,240,255,0.35)]'
-        }`}>
+      {/* Product Packaging Render */}
+      <div className="my-6 sm:my-8 flex items-center justify-center relative">
+        <div className="w-full max-w-[210px] sm:max-w-[250px] aspect-[4/5] flex items-center justify-center rounded-2xl overflow-hidden transition-all duration-500">
           <img
             key={`${sku.id}-${selectedFlavor}`}
             src={currentImage}
             alt={`${sku.title} - ${selectedFlavor}`}
-            className="w-full h-full object-contain transition-all duration-500"
+            className="w-full h-full object-contain filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-500"
             loading="lazy"
           />
         </div>
       </div>
 
-      {/* Flavor Selection Toggle */}
-      <div className="space-y-2 pt-3 sm:pt-4 border-t border-white/[0.08]">
-        <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider">
-          <span className="text-slate-400">Flavor:</span>
-          <span className={`font-bold ${selectedFlavor === 'Coffee Clash' ? 'text-amber-400' : 'text-cyan-400'}`}>
+      {/* Flavor Selection with Sensory Notes */}
+      <div className="space-y-2.5 pt-4 border-t border-white/[0.08]">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-slate-400 font-medium">Select Flavor:</span>
+          <span className={`font-bold uppercase tracking-wider ${selectedFlavor === 'Coffee Clash' ? 'text-amber-400' : 'text-cyan-400'}`}>
             {selectedFlavor}
           </span>
         </div>
@@ -90,56 +62,55 @@ function PremiumCard({ sku, onAddToCart, isFeatured }) {
           <button
             type="button"
             onClick={() => setSelectedFlavor('Cool Mint')}
-            className={`py-2.5 px-3 rounded-xl border text-[11px] font-mono tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 touch-manipulation ${
+            className={`py-3 px-3 rounded-2xl border text-xs font-semibold tracking-wide transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-95 ${
               selectedFlavor === 'Cool Mint'
-                ? 'bg-cyan-400/20 text-cyan-300 border-cyan-400 font-bold shadow-[0_0_15px_rgba(0,240,255,0.25)]'
-                : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
+                ? 'bg-cyan-500/15 text-cyan-300 border-cyan-400 shadow-sm'
+                : 'bg-white/[0.03] border-white/10 text-slate-400 hover:text-white'
             }`}
           >
-            <span>❄️</span>
-            <span>Cool Mint</span>
+            <span className="flex items-center gap-1 font-bold">❄️ Cool Mint</span>
+            <span className="text-[10px] opacity-75 font-normal">Arctic Peppermint</span>
           </button>
 
           <button
             type="button"
             onClick={() => setSelectedFlavor('Coffee Clash')}
-            className={`py-2.5 px-3 rounded-xl border text-[11px] font-mono tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 touch-manipulation ${
+            className={`py-3 px-3 rounded-2xl border text-xs font-semibold tracking-wide transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-95 ${
               selectedFlavor === 'Coffee Clash'
-                ? 'bg-amber-500/20 text-amber-300 border-amber-400 font-bold shadow-[0_0_15px_rgba(245,158,11,0.25)]'
-                : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
+                ? 'bg-amber-500/15 text-amber-300 border-amber-400 shadow-sm'
+                : 'bg-white/[0.03] border-white/10 text-slate-400 hover:text-white'
             }`}
           >
-            <span>☕</span>
-            <span>Coffee Clash</span>
+            <span className="flex items-center gap-1 font-bold">☕ Coffee Clash</span>
+            <span className="text-[10px] opacity-75 font-normal">Dark Roast Espresso</span>
           </button>
         </div>
       </div>
 
       {/* Price & Pre-Order CTA */}
-      <div className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
+      <div className="space-y-3 pt-5">
         <div className="flex items-baseline justify-between">
-          <div className="text-2xl sm:text-4xl font-black font-heading text-white">
+          <div className="text-3xl sm:text-4xl font-black font-heading text-white">
             ₹{sku.price}
           </div>
-          <div className="text-[10px] sm:text-[11px] font-mono text-slate-400 uppercase">
+          <div className="text-xs text-slate-400 font-medium">
             {sku.unitPrice}
           </div>
         </div>
 
-        <div className="text-[9.5px] sm:text-[10px] font-mono text-cyan-300 text-center uppercase tracking-wider py-1.5 px-2 bg-cyan-400/10 rounded-lg border border-cyan-400/20 flex items-center justify-center gap-1">
-          <span>⚡</span>
-          <span>₹40 DELIVERY WAIVED VIA 'FOUNDER001'</span>
+        <div className="text-[11px] text-emerald-400 text-center font-medium py-1.5 px-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+          ✓ Free ₹40 delivery automatically applied with code 'FOUNDER001'
         </div>
 
         <button
           onClick={() => onAddToCart(sku, selectedFlavor)}
-          className={`w-full py-3.5 sm:py-4 rounded-full font-mono font-bold text-xs tracking-[0.16em] uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] touch-manipulation ${
+          className={`w-full py-4 rounded-full font-sans font-bold text-xs tracking-wider uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] shadow-lg ${
             isFeatured
-              ? 'bg-cyan-400 text-black hover:bg-cyan-300 shadow-[0_0_25px_rgba(0,240,255,0.3)] font-black'
-              : 'bg-white/[0.08] text-white hover:bg-white hover:text-black border border-white/20'
+              ? 'bg-white text-black hover:bg-slate-200'
+              : 'bg-white/10 text-white hover:bg-white hover:text-black border border-white/20'
           }`}
         >
-          <ShoppingBag className="w-3.5 h-3.5" />
+          <ShoppingBag className="w-4 h-4" />
           <span>PRE-ORDER {sku.title} • ₹{sku.price}</span>
         </button>
       </div>
@@ -193,26 +164,26 @@ export default function ProductShowcase() {
   };
 
   return (
-    <section id="shop" className="py-20 sm:py-36 bg-[#07090F] border-t border-white/[0.06] relative">
-      <div className="max-w-5xl mx-auto px-4 sm:px-8 space-y-10 sm:space-y-16">
+    <section id="shop" className="py-24 sm:py-36 bg-[#07090F] border-t border-white/[0.06] relative">
+      <div className="max-w-5xl mx-auto px-4 sm:px-8 space-y-12 sm:space-y-16">
         
         {/* Section Header */}
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <div className="text-xs font-mono tracking-[0.25em] text-cyan-400 font-bold uppercase">
-            BATCH 001 ALLOCATION
+          <div className="text-xs font-sans tracking-[0.2em] text-cyan-400 font-bold uppercase">
+            FOUNDER BATCH 001
           </div>
-          <h2 className="text-3xl sm:text-6xl font-black font-heading tracking-tight text-white uppercase">
-            SELECT PACK & FLAVOR.
+          <h2 className="text-3xl sm:text-6xl font-black font-heading tracking-tight text-white uppercase leading-[1.05]">
+            CHOOSE YOUR PACK.
           </h2>
-          <p className="text-xs font-mono tracking-widest text-slate-400 uppercase pt-1">
-            ❄️ COOL MINT & ☕ COFFEE CLASH • ₹40 DELIVERY DISCOUNT VIA 'FOUNDER001' • SHIPS IN 2–3 WEEKS
+          <p className="text-sm text-slate-300 font-normal pt-1">
+            Pre-orders now open. Formulated with pure, pharmaceutical-grade caffeine. Dispatches in 2–3 weeks.
           </p>
         </div>
 
         {/* Two Product Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10 items-stretch">
           {skus.map((sku) => (
-            <PremiumCard
+            <ProductCard
               key={sku.id}
               sku={sku}
               onAddToCart={handleAdd}

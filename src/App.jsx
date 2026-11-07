@@ -3,6 +3,8 @@ import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import ProductFeature from './components/ProductFeature';
+import HowItWorks from './components/HowItWorks';
+import ComparisonSection from './components/ComparisonSection';
 import WhyKaffs from './components/WhyKaffs';
 import FilmSection from './components/FilmSection';
 import ProductShowcase from './components/ProductShowcase';
@@ -51,23 +53,29 @@ export default function App() {
   }
   return (
     <CartProvider>
-      <div className="min-h-screen bg-[#050608] text-slate-100 font-sans selection:bg-cyan-400 selection:text-black">
+      <div className="min-h-screen bg-[#060709] text-slate-100 font-sans selection:bg-cyan-400 selection:text-black">
         {/* Navigation */}
         <Navbar />
 
-        {/* 01 — Hero (Video Background, DAILY POWER-UP, CTAs, Pack Pricing) */}
+        {/* 01 — Hero (POCKET ENERGY. ZERO BOTTLE. + 4 Value Pillars) */}
         <HeroSection />
 
-        {/* 02 — The Product (ENERGY. WITHOUT THE BOTTLE., 40mg, 0 Sugar, 0 Cal, Real Renders) */}
+        {/* 02 — The Strip (Packaging Render, 40mg Caffeine, 0 Sugar, 0 Cal) */}
         <ProductFeature />
 
-        {/* 03 — Why KAFF'S (Fast Energy, Sharper Focus, Pocket Ready - Cinematic Type) */}
+        {/* 03 — How It Works (4 Steps: Peel, Place, Dissolve in 3s, Activate) */}
+        <HowItWorks />
+
+        {/* 04 — Comparison (KAFF'S vs Energy Drinks vs Cafe Coffee) */}
+        <ComparisonSection />
+
+        {/* 05 — Why KAFF'S (Fast Absorption, Clean Focus, Pocket Sized) */}
         <WhyKaffs />
 
-        {/* 04 — Film Section (Full-Width Real Brand Video, SMALL STRIP. BIG ENERGY.) */}
+        {/* 06 — Film Section (4K Brand Film Player) */}
         <FilmSection />
 
-        {/* 05 — Shop (Pack of 5 ₹229, Pack of 10 ₹399 Best Value, Free Shipping on ₹399+) */}
+        {/* 07 — Shop (Pack of 5 ₹229, Pack of 10 ₹399 with Sensory Flavor Profiles) */}
         <ProductShowcase />
 
         {/* Common Questions */}

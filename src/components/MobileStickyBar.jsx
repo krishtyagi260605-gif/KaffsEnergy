@@ -8,8 +8,8 @@ export default function MobileStickyBar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Show after scrolling past 350px (past top hero fold)
-      if (window.scrollY > 350) {
+      // Show after scrolling past 300px
+      if (window.scrollY > 300) {
         setIsVisible(true);
       } else {
         setIsVisible(false);
@@ -20,7 +20,6 @@ export default function MobileStickyBar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Hide if cart or checkout is currently open or not scrolled enough
   if (!isVisible || isCartOpen || isCheckoutOpen) return null;
 
   const scrollToShop = () => {
@@ -33,19 +32,18 @@ export default function MobileStickyBar() {
   return (
     <aside 
       aria-label="Quick Mobile Pre-Order Bar"
-      className="fixed bottom-0 left-0 right-0 z-40 p-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-[#050608] via-[#050608]/95 to-transparent backdrop-blur-xl md:hidden transition-all duration-300"
+      className="fixed bottom-0 left-0 right-0 z-40 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-[#060709] via-[#060709]/95 to-transparent backdrop-blur-xl md:hidden transition-all duration-300"
     >
-      <div className="max-w-md mx-auto bg-[#090D17]/95 border border-cyan-400/40 rounded-2xl p-2.5 px-3.5 flex items-center justify-between shadow-[0_4px_25px_rgba(0,240,255,0.22)]">
+      <div className="max-w-md mx-auto bg-[#0E1118]/95 border border-white/10 rounded-2xl p-3 px-4 flex items-center justify-between shadow-2xl">
         
         {/* Left Info */}
         <div className="space-y-0.5">
-          <div className="flex items-center gap-1.5 text-[9px] font-mono tracking-widest text-cyan-400 uppercase font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span>BATCH 001 // PRE-ORDER</span>
+          <div className="text-[10px] font-sans tracking-wider uppercase font-semibold text-cyan-400">
+            Batch 001 Pre-Order
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-sm font-black font-heading text-white">FROM ₹229</span>
-            <span className="text-[10px] font-mono text-emerald-400 font-bold tracking-tight">FREE DELIVERY</span>
+            <span className="text-base font-black font-heading text-white">FROM ₹229</span>
+            <span className="text-[10px] font-medium text-emerald-400 font-sans">Free Delivery</span>
           </div>
         </div>
 
@@ -54,7 +52,7 @@ export default function MobileStickyBar() {
           {totalItemCount > 0 ? (
             <button
               onClick={() => setIsCartOpen(true)}
-              className="py-2.5 px-4 rounded-xl bg-cyan-400 text-black font-mono font-black text-xs tracking-wider uppercase flex items-center gap-1.5 shadow-lg shadow-cyan-400/25 active:scale-95 transition-transform"
+              className="py-2.5 px-4 rounded-full bg-white text-black font-sans font-bold text-xs tracking-wider uppercase flex items-center gap-1.5 shadow-md active:scale-95 transition-transform cursor-pointer"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
               <span>CART ({totalItemCount})</span>
@@ -62,9 +60,9 @@ export default function MobileStickyBar() {
           ) : (
             <button
               onClick={scrollToShop}
-              className="py-2.5 px-4 rounded-xl bg-cyan-400 text-black font-mono font-black text-xs tracking-wider uppercase flex items-center gap-1.5 shadow-lg shadow-cyan-400/25 active:scale-95 transition-transform"
+              className="py-2.5 px-4 rounded-full bg-white text-black font-sans font-bold text-xs tracking-wider uppercase flex items-center gap-1.5 shadow-md active:scale-95 transition-transform cursor-pointer"
             >
-              <span>CLAIM NOW</span>
+              <span>PRE-ORDER</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           )}

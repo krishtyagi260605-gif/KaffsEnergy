@@ -201,25 +201,25 @@ export default function CheckoutModal() {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6 overflow-y-auto">
-      <div className="bg-[#080B12] border-t sm:border border-cyan-500/25 rounded-t-3xl sm:rounded-3xl max-w-xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto p-5 sm:p-8 relative shadow-[0_0_60px_rgba(0,240,255,0.12)] my-0 sm:my-8 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <div className="bg-[#0C0F17] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl max-w-xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto p-5 sm:p-8 relative shadow-2xl my-0 sm:my-8 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         
         {!isSuccess ? (
           <div className="space-y-4 sm:space-y-6">
             {/* Top Navigation Row */}
-            <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 text-[9.5px] sm:text-[10px] font-mono tracking-widest text-cyan-400 uppercase font-bold">
-                  <Lock className="w-3 h-3" />
-                  <span>CASHFREE SECURE</span>
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5 text-xs font-sans text-slate-300 font-semibold">
+                  <Lock className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Cashfree 256-Bit Secure</span>
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-mono uppercase bg-cyan-400/10 text-cyan-300 border border-cyan-400/30 px-2 py-0.5 rounded-full font-bold">
-                  BATCH 001
+                <span className="text-[10px] font-sans uppercase bg-cyan-400/10 text-cyan-300 border border-cyan-400/20 px-2 py-0.5 rounded-full font-bold">
+                  Batch 001
                 </span>
               </div>
 
               <button
                 onClick={handleClose}
-                className="p-1.5 text-slate-400 hover:text-white active:scale-90 transition-transform cursor-pointer rounded-lg bg-white/5"
+                className="p-1.5 text-slate-400 hover:text-white active:scale-90 transition-transform cursor-pointer rounded-full bg-white/5"
                 aria-label="Close Checkout"
               >
                 <X className="w-4 h-4" />
@@ -228,11 +228,11 @@ export default function CheckoutModal() {
 
             {/* Header Title */}
             <div className="space-y-1">
-              <h3 className="text-xl sm:text-3xl font-black font-heading text-white uppercase tracking-tight">
-                CLAIM YOUR ALLOCATION
+              <h3 className="text-xl sm:text-2xl font-black font-heading text-white uppercase tracking-tight">
+                DELIVERY & PAYMENT
               </h3>
-              <p className="text-[11px] sm:text-xs text-slate-400 font-mono">
-                ⚡ ₹40 Delivery Fee Waived with 'FOUNDER001' • Ships in 2–3 weeks
+              <p className="text-xs text-slate-400 font-sans">
+                ⚡ ₹40 Delivery Fee Waived with 'FOUNDER001' • Ships in 2–3 weeks with live tracking
               </p>
             </div>
 
@@ -400,7 +400,7 @@ export default function CheckoutModal() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full py-3.5 sm:py-4 rounded-full bg-cyan-400 text-black font-mono font-black text-xs tracking-[0.16em] uppercase hover:bg-cyan-300 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-xl active:scale-[0.98] touch-manipulation"
+                className="w-full py-4 rounded-full bg-white text-black font-sans font-bold text-xs tracking-wider uppercase hover:bg-slate-200 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-xl active:scale-[0.98] touch-manipulation"
               >
                 {isProcessing ? (
                   <span className="flex items-center gap-2">
@@ -409,14 +409,14 @@ export default function CheckoutModal() {
                   </span>
                 ) : (
                   <>
-                    <span>PAY & SECURE PRE-ORDER • ₹{finalPayable}</span>
+                    <span>PAY & PLACE PRE-ORDER • ₹{finalPayable}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
               </button>
 
-              <div className="flex items-center justify-center gap-1.5 text-[9.5px] sm:text-[10px] font-mono text-slate-500 uppercase tracking-widest text-center">
-                <ShieldCheck className="w-3 h-3 text-cyan-400" />
+              <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 text-center font-sans">
+                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Cashfree 256-Bit Encrypted • 100% Prepaid • Ships in 2–3 weeks</span>
               </div>
 
