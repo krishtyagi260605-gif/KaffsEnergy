@@ -3,7 +3,7 @@ import { useCart } from '../context/CartContext';
 import { ShoppingBag } from './Icons';
 
 function ProductCard({ sku, onAddToCart, isFeatured }) {
-  const [selectedFlavor, setSelectedFlavor] = useState('Cool Mint'); // 'Cool Mint' or 'Coffee Clash'
+  const [selectedFlavor, setSelectedFlavor] = useState('Cool Mint');
 
   const currentImage = selectedFlavor === 'Coffee Clash' ? (sku.coffeeImage || sku.image) : sku.image;
 
@@ -87,19 +87,17 @@ function ProductCard({ sku, onAddToCart, isFeatured }) {
         </div>
       </div>
 
-      {/* Price & Pre-Order CTA */}
+      {/* Price & CTA */}
       <div className="space-y-3 pt-5">
         <div className="flex items-baseline justify-between">
-          <div className="text-3xl sm:text-4xl font-black font-heading text-white">
-            ₹{sku.price}
-          </div>
-          <div className="text-xs text-slate-400 font-medium">
-            {sku.unitPrice}
+          <div className="flex items-baseline gap-2.5">
+            <span className="text-3xl sm:text-4xl font-black font-heading text-white">₹{sku.salePrice}</span>
+            <span className="text-base text-slate-500 line-through font-medium">₹{sku.price}</span>
+            <span className="text-xs font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full">21% OFF</span>
           </div>
         </div>
-
-        <div className="text-[11px] text-emerald-400 text-center font-medium py-1.5 px-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-          ✓ Free ₹40 delivery automatically applied with code 'FOUNDER001'
+        <div className="text-[11px] text-slate-400 font-medium">
+          {sku.saleUnitPrice} • Free Delivery
         </div>
 
         <button
@@ -111,7 +109,7 @@ function ProductCard({ sku, onAddToCart, isFeatured }) {
           }`}
         >
           <ShoppingBag className="w-4 h-4" />
-          <span>PRE-ORDER {sku.title} • ₹{sku.price}</span>
+          <span>ORDER {sku.title} • ₹{sku.salePrice}</span>
         </button>
       </div>
 
@@ -127,8 +125,10 @@ export default function ProductShowcase() {
       id: 'kaffs-5',
       title: 'PACK OF 5',
       price: 229,
+      salePrice: 181,
       strips: 5,
       unitPrice: '₹45.80 / strip',
+      saleUnitPrice: '₹36.20 / strip',
       badge: 'STARTER PACK',
       image: '/brand/kaffs-pack-5.png',
       coffeeImage: '/brand/kaffs-pack-5-coffee.jpg',
@@ -138,8 +138,10 @@ export default function ProductShowcase() {
       id: 'kaffs-10',
       title: 'PACK OF 10',
       price: 399,
+      salePrice: 315,
       strips: 10,
       unitPrice: '₹39.90 / strip',
+      saleUnitPrice: '₹31.50 / strip',
       badge: 'BEST VALUE',
       image: '/brand/kaffs-pack-10.png',
       coffeeImage: '/brand/kaffs-pack-10-coffee.jpg',
@@ -169,14 +171,14 @@ export default function ProductShowcase() {
         
         {/* Section Header */}
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <div className="text-xs font-sans tracking-[0.2em] text-cyan-400 font-bold uppercase">
-            FOUNDER BATCH 001
+          <div className="text-xs font-sans tracking-[0.2em] text-orange-400 font-bold uppercase">
+            🪔 AFTER DIWALI SALE — 21% OFF
           </div>
           <h2 className="text-3xl sm:text-6xl font-black font-heading tracking-tight text-white uppercase leading-[1.05]">
             CHOOSE YOUR PACK.
           </h2>
           <p className="text-sm text-slate-300 font-normal pt-1">
-            Pre-orders now open. Formulated with pure, pharmaceutical-grade caffeine. Dispatches in 2–3 weeks.
+            Sale prices applied. Free delivery on all orders. Dispatches in 2–3 weeks.
           </p>
         </div>
 

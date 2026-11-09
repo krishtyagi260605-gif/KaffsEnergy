@@ -15,7 +15,7 @@ export default function FAQSection() {
     },
     {
       q: 'What flavors and packs are available in Founder Batch 001?',
-      a: 'Available in two signature flavors: ❄️ Cool Mint (crisp arctic peppermint) and ☕ Coffee Clash (dark roast espresso). Choose between Pack of 5 (₹229) and Pack of 10 (₹399). Standard delivery fee of ₹40 is 100% waived with code FOUNDER001.',
+      a: 'Available in two signature flavors: ❄️ Cool Mint (crisp arctic peppermint) and ☕ Coffee Clash (dark roast espresso). Choose between Pack of 5 (₹229 → ₹181) and Pack of 10 (₹399 → ₹315) with our After Diwali Sale — 21% OFF + Free Delivery on all orders.',
     },
     {
       q: 'When should I take KAFF\'S?',

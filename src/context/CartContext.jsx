@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+// Diwali Sale: flat 21% off on all orders — applied automatically
+const DIWALI_DISCOUNT_PERCENT = 21;
+
 const defaultContext = {
   cartItems: [],
   isCartOpen: false,
@@ -15,12 +18,6 @@ const defaultContext = {
   shippingFee: 0,
   total: 0,
   totalItemCount: 0,
-  appliedPromo: {
-    code: 'FOUNDER001',
-    discountAmount: 40,
-    label: 'Founder Delivery Waiver (-₹40)',
-  },
-  setAppliedPromo: () => {},
 };
 
 const CartContext = createContext(defaultContext);
@@ -37,13 +34,6 @@ export function CartProvider({ children }) {
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  
-  // Auto-applied Founder Batch 1 ₹40 Delivery Waiver Coupon
-  const [appliedPromo, setAppliedPromo] = useState({
-    code: 'FOUNDER001',
-    discountAmount: 40,
-    label: 'Founder Delivery Waiver (-₹40)',
-  });
 
   useEffect(() => {
     try {
@@ -69,8 +59,8 @@ export function CartProvider({ children }) {
           name: "KAFF'S energy",
           caffeine: '40mg',
           packSize: packSize,
-          stripCount: packSize, // 5 or 10
-          flavor: selectedFlavor, // 'Cool Mint' or 'Coffee Clash'
+          stripCount: packSize,
+          flavor: selectedFlavor,
           price: price,
           quantity: 1,
           badge: packSize === 10 ? 'BEST VALUE' : 'STARTER PACK',
@@ -103,11 +93,12 @@ export function CartProvider({ children }) {
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   
-  // Standard delivery is ₹40, fully waived with FOUNDER001 promo coupon
-  const shippingFee = cartItems.length > 0 ? 40 : 0;
-  const discountAmount = appliedPromo && cartItems.length > 0 ? (appliedPromo.discountAmount || 40) : 0;
+  // Free delivery during Diwali sale
+  const shippingFee = 0;
+
+  // Auto-applied 21% Diwali discount
+  const discountAmount = cartItems.length > 0 ? Math.round(subtotal * (DIWALI_DISCOUNT_PERCENT / 100)) : 0;
   
-  // Total keeps your product price intact: ₹229 for 5-pack, ₹399 for 10-pack
   const total = Math.max(0, subtotal + shippingFee - discountAmount);
 
   const totalItemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -129,8 +120,6 @@ export function CartProvider({ children }) {
         shippingFee,
         total,
         totalItemCount,
-        appliedPromo,
-        setAppliedPromo,
       }}
     >
       {children}

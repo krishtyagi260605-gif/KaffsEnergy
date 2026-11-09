@@ -49,7 +49,7 @@ export default function Footer() {
           </p>
           <h4 className="text-white font-bold uppercase tracking-wider text-sm pt-2">2. Pricing & Currency</h4>
           <p>
-            All prices are in Indian Rupees (INR) inclusive of applicable taxes. Pack of 5 is priced at ₹229, and Pack of 10 at ₹399. Founder delivery waiver of ₹40 applies automatically with code FOUNDER001.
+            All prices are in Indian Rupees (INR) inclusive of applicable taxes. Pack of 5 is priced at ₹181 (MRP ₹229), and Pack of 10 at ₹315 (MRP ₹399) during the After Diwali Sale — 21% OFF. Free delivery on all orders.
           </p>
           <h4 className="text-white font-bold uppercase tracking-wider text-sm pt-2">3. Product Consumption</h4>
           <p>
@@ -84,7 +84,7 @@ export default function Footer() {
           </ul>
           <h4 className="text-white font-bold uppercase tracking-wider text-sm pt-2">3. Shipping Charges</h4>
           <p>
-            Standard shipping fee is ₹40 per order, which is completely waived for all Founder Batch 001 customers using promo code <strong>FOUNDER001</strong>.
+            Free delivery on all orders during the After Diwali Sale. Standard shipping is available pan-India with tracking provided via WhatsApp and SMS.
           </p>
         </div>
       ),

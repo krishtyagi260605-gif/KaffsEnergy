@@ -32,8 +32,8 @@ export default function Navbar() {
           <span className="hidden sm:inline text-slate-400">•</span>
           <span>Pre-Orders Live • 40mg Caffeine Micro-Strips</span>
           <span className="hidden md:inline text-slate-400">•</span>
-          <span className="hidden md:inline text-emerald-400 font-semibold">
-            ₹40 Delivery Waived with code 'FOUNDER001'
+          <span className="hidden md:inline text-orange-300 font-semibold">
+            🪔 After Diwali Sale — Flat 21% OFF + Free Delivery
           </span>
         </div>
       </div>

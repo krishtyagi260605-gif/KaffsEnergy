@@ -11,7 +11,6 @@ export default function CheckoutModal() {
     discountAmount,
     shippingFee,
     total,
-    appliedPromo,
     clearCart,
   } = useCart();
 
@@ -232,7 +231,7 @@ export default function CheckoutModal() {
                 DELIVERY & PAYMENT
               </h3>
               <p className="text-xs text-slate-400 font-sans">
-                ⚡ ₹40 Delivery Fee Waived with 'FOUNDER001' • Ships in 2–3 weeks with live tracking
+                ⚡ 21% OFF + Free Delivery — After Diwali Sale • Ships in 2–3 weeks with live tracking
               </p>
             </div>
 
@@ -377,19 +376,19 @@ export default function CheckoutModal() {
               {/* Order Total Breakdown */}
               <div className="p-3 bg-[#0B0F19] border border-white/[0.08] rounded-2xl space-y-1.5 text-xs font-mono">
                 <div className="flex justify-between text-slate-400">
-                  <span>Product Subtotal:</span>
-                  <span className="text-white font-bold">₹{subtotal}</span>
-                </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>Standard Delivery:</span>
-                  <span className="text-white">₹{shippingFee}</span>
+                  <span>Subtotal:</span>
+                  <span className="text-slate-500 line-through">₹{subtotal}</span>
                 </div>
                 {discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-400">
-                    <span>Founder Waiver ({appliedPromo?.code || 'FOUNDER001'}):</span>
-                    <span>-₹{discountAmount}</span>
+                  <div className="flex justify-between text-orange-400 font-semibold">
+                    <span>After Diwali Sale (21% OFF):</span>
+                    <span>−₹{discountAmount}</span>
                   </div>
                 )}
+                <div className="flex justify-between text-slate-400">
+                  <span>Delivery:</span>
+                  <span className="text-emerald-400 font-medium">FREE</span>
+                </div>
                 <div className="border-t border-white/10 pt-1.5 flex justify-between text-sm font-bold text-white">
                   <span>Total Payable:</span>
                   <span className="text-cyan-400 text-base">₹{finalPayable}</span>
