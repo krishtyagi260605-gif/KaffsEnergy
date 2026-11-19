@@ -19,8 +19,8 @@ export default function HowItWorks() {
     {
       num: '03',
       title: 'Dissolve',
-      timing: '3 Seconds',
-      description: 'The strip instantly dissolves on contact, releasing pure refreshing flavor — Cool Mint or Coffee Clash.',
+      timing: '30 Seconds',
+      description: 'The strip dissolves smoothly on contact with your tongue, releasing bioactive nootropics and crisp flavor — Cool Mint or Coffee Clash.',
       icon: '⚡',
     },
     {

@@ -8,13 +8,18 @@ export default function CheckoutModal() {
     setIsCheckoutOpen,
     cartItems,
     subtotal,
-    discountAmount,
-    shippingFee,
+    saleDiscountAmount,
+    couponDiscount,
+    appliedCoupon,
+    couponError,
+    applyCoupon,
+    removeCoupon,
     total,
     clearCart,
   } = useCart();
 
   const [paymentMethod, setPaymentMethod] = useState('upi'); // upi, card
+  const [couponCodeInput, setCouponCodeInput] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -78,16 +83,93 @@ export default function CheckoutModal() {
 
   const finalPayable = total;
 
+  const handleApplyCouponInModal = async (e) => {
+    e.preventDefault();
+    if (!couponCodeInput.trim()) return;
+    await applyCoupon(couponCodeInput);
+  };
+
   const handlePayNow = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
     setErrorMessage('');
 
     try {
-      // 1. Call backend endpoint to initialize Cashfree session
       const itemsSummary = cartItems.map((i) => `${i.packSize}pk ${i.flavor || 'Cool Mint'}`).join(', ');
       const fullDeliveryAddress = `${formData.address}, ${formData.city} - ${formData.pincode}`;
 
+      // 1. Check if 100% Free Founder Pass (amount === 0)
+      if (finalPayable === 0) {
+        const orderId = `KAFFS-FOUNDER-${Date.now().toString().slice(-6)}`;
+        
+        // Mark coupon claimed permanently in localStorage
+        if (appliedCoupon === 'founder001') {
+          localStorage.setItem('kaffs_coupon_founder001_claimed', 'true');
+          try {
+            fetch('/api/claim-coupon', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                code: 'founder001',
+                order_id: orderId,
+                customer_name: formData.name,
+                customer_phone: formData.phone,
+              }),
+            }).catch(console.warn);
+          } catch (e) {}
+        }
+
+        const freeOrderDetails = {
+          id: orderId,
+          backerNumber: Math.floor(715 + Math.random() * 20),
+          method: 'Founder VIP Voucher (founder001)',
+          amount: 0,
+          status: 'PAID & CLAIMED (100% FREE)',
+          items: itemsSummary,
+          name: formData.name,
+          phone: formData.phone,
+          address: fullDeliveryAddress,
+        };
+
+        const adminOrderRecord = {
+          id: freeOrderDetails.id,
+          cf_order_id: 'FREE-FOUNDER-PASS',
+          created_at: new Date().toISOString(),
+          customer_name: formData.name,
+          customer_phone: formData.phone,
+          customer_email: formData.email,
+          customer_address: formData.address,
+          customer_city: formData.city,
+          customer_pincode: formData.pincode,
+          full_address: fullDeliveryAddress,
+          items: itemsSummary,
+          amount: 0,
+          payment_status: 'PAID (FOUNDER VOUCHER)',
+          delivery_status: 'UNDELIVERED',
+          notes: 'Claimed via single-use coupon founder001 (100% Free Pack of 5)',
+        };
+
+        try {
+          fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(adminOrderRecord),
+          }).catch(console.warn);
+
+          const existingOrders = JSON.parse(localStorage.getItem('kaffs_admin_orders') || '[]');
+          localStorage.setItem('kaffs_admin_orders', JSON.stringify([adminOrderRecord, ...existingOrders]));
+        } catch (e) {
+          console.warn('Local admin sync:', e);
+        }
+
+        setCompletedOrder(freeOrderDetails);
+        setIsProcessing(false);
+        setIsSuccess(true);
+        clearCart();
+        return;
+      }
+
+      // 2. Paid orders: Call backend endpoint to initialize Cashfree session
       const response = await fetch('/api/create-cashfree-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,7 +192,7 @@ export default function CheckoutModal() {
         throw new Error(data.message || data.error || 'Failed to initialize payment session. Please retry.');
       }
 
-      // 2. Launch Cashfree v3 Modal
+      // 3. Launch Cashfree v3 Modal
       if (!window.Cashfree) {
         throw new Error('Payment gateway SDK is loading. Please retry in a moment.');
       }
@@ -131,7 +213,11 @@ export default function CheckoutModal() {
           return;
         }
 
-        // 3. Mark success and show VIP backer confirmation
+        // 4. Mark success and show VIP confirmation
+        if (appliedCoupon === 'founder001') {
+          localStorage.setItem('kaffs_coupon_founder001_claimed', 'true');
+        }
+
         const deliveryAddress = `${formData.address}, ${formData.city} - ${formData.pincode}`;
         const finalOrderDetails = {
           id: (data.order_id || `KAFFS-${Date.now()}`).toUpperCase(),
@@ -231,7 +317,7 @@ export default function CheckoutModal() {
                 DELIVERY & PAYMENT
               </h3>
               <p className="text-xs text-slate-400 font-sans">
-                ⚡ 21% OFF + Free Delivery — After Diwali Sale • Ships in 2–3 weeks with live tracking
+                ⚡ 15% OFF + Free Delivery — Early Black Friday Sale • Ships in 2–3 weeks with live tracking
               </p>
             </div>
 
@@ -254,6 +340,50 @@ export default function CheckoutModal() {
                 </div>
               </div>
             )}
+
+            {/* Promo Code Row in Checkout */}
+            <div className="p-3 bg-[#0B0F19] rounded-xl border border-white/[0.06] space-y-2">
+              <div className="text-[10px] font-mono uppercase text-slate-400 font-bold flex items-center justify-between">
+                <span>Have a Promo / Founder Code?</span>
+                {appliedCoupon && (
+                  <span className="text-emerald-400 font-bold">✓ APPLIED: {appliedCoupon}</span>
+                )}
+              </div>
+              {!appliedCoupon ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter code (e.g. founder001)"
+                    value={couponCodeInput}
+                    onChange={(e) => setCouponCodeInput(e.target.value)}
+                    className="flex-1 px-3 py-2 bg-black/50 border border-white/10 rounded-xl text-xs font-mono text-white placeholder-slate-600 uppercase focus:outline-none focus:border-cyan-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCouponInModal}
+                    className="px-3.5 py-2 rounded-xl bg-cyan-400 text-black font-sans font-bold text-xs uppercase tracking-wider hover:bg-cyan-300 transition-colors cursor-pointer"
+                  >
+                    Apply
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-xl">
+                  <span>🎁 1x Pack of 5 is 100% FREE</span>
+                  <button
+                    type="button"
+                    onClick={removeCoupon}
+                    className="text-slate-400 hover:text-red-400 ml-2 cursor-pointer font-bold"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+              {couponError && (
+                <div className="text-[11px] text-red-400 font-mono">
+                  ⚠️ {couponError}
+                </div>
+              )}
+            </div>
 
             {/* Error Banner */}
             {errorMessage && (
@@ -333,45 +463,56 @@ export default function CheckoutModal() {
                 </div>
               </div>
 
-              {/* Payment Method Selector — 100% Prepaid */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] sm:text-[11px] font-mono text-slate-400 uppercase tracking-wider block font-bold">
-                    Payment Method
-                  </label>
-                  <span className="text-[9.5px] sm:text-[10px] font-mono text-cyan-400 font-bold">
-                    🔒 100% Prepaid Exclusive
-                  </span>
+              {/* Payment Method Selector — or Free Pass Badge */}
+              {finalPayable === 0 ? (
+                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-center space-y-1">
+                  <div className="text-sm font-bold font-mono uppercase tracking-wider flex items-center justify-center gap-1.5">
+                    <span>🎁 100% COMPLIMENTARY FOUNDER PASS</span>
+                  </div>
+                  <p className="text-xs text-slate-300 font-sans">
+                    No payment required. Your single-use voucher makes this Pack of 5 completely free.
+                  </p>
                 </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] sm:text-[11px] font-mono text-slate-400 uppercase tracking-wider block font-bold">
+                      Payment Method
+                    </label>
+                    <span className="text-[9.5px] sm:text-[10px] font-mono text-cyan-400 font-bold">
+                      🔒 100% Prepaid Exclusive
+                    </span>
+                  </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('upi')}
-                    className={`py-3 px-3 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
-                      paymentMethod === 'upi'
-                        ? 'bg-cyan-400 text-black border-cyan-400 font-black shadow-lg shadow-cyan-400/20'
-                        : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1 font-bold">⚡ Instant UPI</span>
-                    <span className="text-[8.5px] sm:text-[9px] opacity-80">GPay • PhonePe • Paytm</span>
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('upi')}
+                      className={`py-3 px-3 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
+                        paymentMethod === 'upi'
+                          ? 'bg-cyan-400 text-black border-cyan-400 font-black shadow-lg shadow-cyan-400/20'
+                          : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1 font-bold">⚡ Instant UPI</span>
+                      <span className="text-[8.5px] sm:text-[9px] opacity-80">GPay • PhonePe • Paytm</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('card')}
-                    className={`py-3 px-3 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
-                      paymentMethod === 'card'
-                        ? 'bg-cyan-400 text-black border-cyan-400 font-black shadow-lg shadow-cyan-400/20'
-                        : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1 font-bold">💳 Cards / NetBanking</span>
-                    <span className="text-[8.5px] sm:text-[9px] opacity-80">Visa • MC • RuPay • Banks</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('card')}
+                      className={`py-3 px-3 rounded-xl border text-[11px] sm:text-xs font-mono tracking-wider uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 active:scale-95 touch-manipulation ${
+                        paymentMethod === 'card'
+                          ? 'bg-cyan-400 text-black border-cyan-400 font-black shadow-lg shadow-cyan-400/20'
+                          : 'bg-[#0B0F19] border-white/10 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1 font-bold">💳 Cards / NetBanking</span>
+                      <span className="text-[8.5px] sm:text-[9px] opacity-80">Visa • MC • RuPay • Banks</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Order Total Breakdown */}
               <div className="p-3 bg-[#0B0F19] border border-white/[0.08] rounded-2xl space-y-1.5 text-xs font-mono">
@@ -379,10 +520,16 @@ export default function CheckoutModal() {
                   <span>Subtotal:</span>
                   <span className="text-slate-500 line-through">₹{subtotal}</span>
                 </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-orange-400 font-semibold">
-                    <span>After Diwali Sale (21% OFF):</span>
-                    <span>−₹{discountAmount}</span>
+                {saleDiscountAmount > 0 && (
+                  <div className="flex justify-between text-cyan-400 font-semibold">
+                    <span>Early Black Friday Sale (15% OFF):</span>
+                    <span>−₹{saleDiscountAmount}</span>
+                  </div>
+                )}
+                {appliedCoupon === 'founder001' && couponDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-400 font-semibold">
+                    <span>Founder VIP Pass (founder001):</span>
+                    <span>−₹{couponDiscount} (FREE)</span>
                   </div>
                 )}
                 <div className="flex justify-between text-slate-400">
@@ -391,7 +538,9 @@ export default function CheckoutModal() {
                 </div>
                 <div className="border-t border-white/10 pt-1.5 flex justify-between text-sm font-bold text-white">
                   <span>Total Payable:</span>
-                  <span className="text-cyan-400 text-base">₹{finalPayable}</span>
+                  <span className={finalPayable === 0 ? "text-emerald-400 text-base font-black" : "text-cyan-400 text-base"}>
+                    {finalPayable === 0 ? '₹0 (FREE)' : `₹${finalPayable}`}
+                  </span>
                 </div>
               </div>
 
@@ -399,16 +548,22 @@ export default function CheckoutModal() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full py-4 rounded-full bg-white text-black font-sans font-bold text-xs tracking-wider uppercase hover:bg-slate-200 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-xl active:scale-[0.98] touch-manipulation"
+                className={`w-full py-4 rounded-full font-sans font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-xl active:scale-[0.98] touch-manipulation ${
+                  finalPayable === 0
+                    ? 'bg-emerald-400 text-black hover:bg-emerald-300'
+                    : 'bg-white text-black hover:bg-slate-200'
+                }`}
               >
                 {isProcessing ? (
                   <span className="flex items-center gap-2">
                     <span className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    CONNECTING TO CASHFREE...
+                    {finalPayable === 0 ? 'CLAIMING FREE ORDER...' : 'CONNECTING TO CASHFREE...'}
                   </span>
                 ) : (
                   <>
-                    <span>PAY & PLACE PRE-ORDER • ₹{finalPayable}</span>
+                    <span>
+                      {finalPayable === 0 ? 'CLAIM FREE ORDER NOW • ₹0' : `PAY & PLACE PRE-ORDER • ₹${finalPayable}`}
+                    </span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
@@ -430,13 +585,19 @@ export default function CheckoutModal() {
 
             <div className="space-y-2">
               <div className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-widest">
-                🎉 PAYMENT VERIFIED • BATCH 001 SECURED
+                {completedOrder?.amount === 0
+                  ? '🎁 FOUNDER VIP PASS REDEEMED • 100% FREE'
+                  : '🎉 PAYMENT VERIFIED • BATCH 001 SECURED'}
               </div>
               <h3 className="text-2xl sm:text-3xl font-black font-heading text-white uppercase tracking-tight">
-                THANK YOU FOR YOUR PURCHASE!
+                {completedOrder?.amount === 0
+                  ? 'WELCOME TO THE FOUNDER CIRCLE!'
+                  : 'THANK YOU FOR YOUR PURCHASE!'}
               </h3>
               <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-                Your pre-order has been secured. Your Batch 001 allocation is locked in. Dispatches in 2–3 weeks with live tracking.
+                {completedOrder?.amount === 0
+                  ? 'Your free Pack of 5 has been successfully claimed with coupon founder001. Your allocation is locked in and dispatches in 2–3 weeks with live tracking.'
+                  : 'Your pre-order has been secured. Your Batch 001 allocation is locked in. Dispatches in 2–3 weeks with live tracking.'}
               </p>
             </div>
 
@@ -451,13 +612,21 @@ export default function CheckoutModal() {
                   <span className="text-white font-bold">{completedOrder.cfOrderId}</span>
                 </div>
               )}
+              {completedOrder?.amount === 0 && (
+                <div className="flex justify-between text-emerald-400">
+                  <span>Coupon Applied:</span>
+                  <span className="font-bold">founder001 (100% OFF)</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Founder Allocation:</span>
                 <span className="text-cyan-400 font-black">#{completedOrder?.backerNumber || 715} of 1,000</span>
               </div>
               <div className="flex justify-between">
                 <span>Amount Paid:</span>
-                <span className="text-emerald-400 font-black text-sm">₹{completedOrder?.amount}</span>
+                <span className="text-emerald-400 font-black text-sm">
+                  {completedOrder?.amount === 0 ? '₹0 (100% FREE)' : `₹${completedOrder?.amount}`}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Payment Status:</span>
@@ -486,7 +655,9 @@ export default function CheckoutModal() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <a
                 href={`https://wa.me/919315060525?text=${encodeURIComponent(
-                  `Hi KAFF'S Energy! I just completed my pre-order ${completedOrder?.id || ''} for ₹${completedOrder?.amount || 229}. Please share my confirmation receipt!`
+                  completedOrder?.amount === 0
+                    ? `Hi KAFF'S Energy! I just claimed my FREE Founder Pass Pack of 5 (Order ${completedOrder?.id || ''}) using coupon founder001. Please confirm my dispatch!`
+                    : `Hi KAFF'S Energy! I just completed my pre-order ${completedOrder?.id || ''} for ₹${completedOrder?.amount || 229}. Please share my confirmation receipt!`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"

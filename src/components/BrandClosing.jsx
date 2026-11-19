@@ -29,7 +29,7 @@ export default function BrandClosing() {
             onClick={scrollToShop}
             className="px-8 sm:px-10 py-4 sm:py-5 rounded-full bg-white text-black font-sans font-bold text-xs tracking-wider uppercase hover:bg-slate-200 transition-all duration-200 inline-flex items-center gap-2.5 shadow-2xl active:scale-98 cursor-pointer"
           >
-            <span>PRE-ORDER NOW (FROM ₹229)</span>
+            <span>PRE-ORDER NOW — FROM ₹195</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

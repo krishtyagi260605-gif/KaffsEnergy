@@ -27,13 +27,13 @@ export default function HeroSection() {
 
       {/* Top Editorial Eyebrow */}
       <div className="relative z-10 max-w-6xl mx-auto w-full pt-1 sm:pt-4 text-center sm:text-left flex flex-wrap items-center gap-2">
-        <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-400/25 backdrop-blur-md text-xs font-sans font-semibold text-orange-300">
-          <span>🪔</span>
-          <span>After Diwali Sale — Flat 21% OFF</span>
+        <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-400/25 backdrop-blur-md text-xs font-sans font-semibold text-cyan-300">
+          <span>🖤</span>
+          <span>Early Black Friday Sale — Flat 15% OFF</span>
         </div>
         <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/10 backdrop-blur-md text-xs font-sans font-medium text-slate-300">
           <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
-          <span>Free Delivery on All Orders</span>
+          <span>Free Delivery Pan-India</span>
         </div>
       </div>
 
@@ -47,25 +47,25 @@ export default function HeroSection() {
           </h1>
 
           <p className="text-base sm:text-xl text-slate-300 font-normal max-w-xl leading-relaxed mx-auto sm:mx-0">
-            Flavored caffeine micro-strips that dissolve on your tongue in 3 seconds. 40mg of fast, clean alertness without liquid bloat, sugar, or jitters.
+            Flavored caffeine micro-strips powered by bioactive nootropics. 40mg caffeine + L-theanine for sustained focus, clean alertness, zero liquid bloat, and zero sugar crash. Dissolves in 30 seconds.
           </p>
 
           {/* Clean 4-Pillar Spec Badges */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 max-w-xl pt-1">
             <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm text-left">
               <div className="text-lg sm:text-xl font-bold font-heading text-white">40mg</div>
-              <div className="text-[11px] text-slate-400 font-medium">Pure Caffeine</div>
+              <div className="text-[11px] text-slate-400 font-medium">Clean Caffeine</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm text-left">
+              <div className="text-lg sm:text-xl font-bold font-heading text-white">+ Nootropics</div>
+              <div className="text-[11px] text-slate-400 font-medium">L-Theanine, B6 & B12</div>
             </div>
             <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm text-left">
               <div className="text-lg sm:text-xl font-bold font-heading text-white">0g Sugar</div>
               <div className="text-[11px] text-slate-400 font-medium">Zero Calorie Crash</div>
             </div>
             <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm text-left">
-              <div className="text-lg sm:text-xl font-bold font-heading text-white">3 Sec</div>
-              <div className="text-[11px] text-slate-400 font-medium">Melts On Tongue</div>
-            </div>
-            <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm text-left">
-              <div className="text-lg sm:text-xl font-bold font-heading text-white">FSSAI</div>
+              <div className="text-lg sm:text-xl font-bold font-heading text-white">GMP & FSSAI</div>
               <div className="text-[11px] text-slate-400 font-medium">Quality Certified</div>
             </div>
           </div>
@@ -76,7 +76,7 @@ export default function HeroSection() {
               onClick={() => scrollTo('shop')}
               className="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-black font-sans font-bold text-xs tracking-wider uppercase hover:bg-slate-200 transition-all duration-200 flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl active:scale-[0.98] cursor-pointer touch-manipulation"
             >
-              <span>ORDER NOW — FROM ₹181</span>
+              <span>ORDER NOW — FROM ₹195</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
 
@@ -91,11 +91,11 @@ export default function HeroSection() {
 
           {/* Trust Banner */}
           <div className="pt-1 flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1 text-xs text-slate-400">
-            <span className="text-orange-300 font-semibold">🪔 21% OFF — After Diwali Sale</span>
+            <span className="text-cyan-300 font-semibold">🖤 15% OFF — Early Black Friday Sale</span>
             <span>•</span>
             <span className="text-emerald-400 font-semibold">✓ Free Delivery</span>
             <span>•</span>
-            <span>Ships in 2–3 weeks</span>
+            <span>Dispatches in 2–3 weeks</span>
           </div>
 
         </div>
@@ -104,13 +104,13 @@ export default function HeroSection() {
       {/* Bottom Pack Pricing Strip */}
       <div className="relative z-10 max-w-6xl mx-auto w-full pt-4 sm:pt-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs tracking-wide uppercase text-slate-400 text-center sm:text-left">
         <div className="flex items-center gap-4 sm:gap-6 font-semibold">
-          <span className="text-white">Pack of 5 — <span className="line-through text-slate-500">₹229</span> ₹181</span>
+          <span className="text-white">Pack of 5 — <span className="line-through text-slate-500">₹229</span> ₹195</span>
           <span className="text-slate-600">/</span>
-          <span className="text-white">Pack of 10 — <span className="line-through text-slate-500">₹399</span> ₹315 <span className="text-cyan-400 font-normal">(Best Value)</span></span>
+          <span className="text-white">Pack of 10 — <span className="line-through text-slate-500">₹399</span> ₹339 <span className="text-cyan-400 font-normal">(Best Value)</span></span>
         </div>
 
         <div className="text-[11px] text-slate-400 font-medium">
-          ❄️ Cool Mint & ☕ Coffee Clash • 100% Plant-Based & Sugar-Free
+          ❄️ Cool Mint & ☕ Coffee Clash • Synergistic Bioactive Formula • Dissolves in 30s
         </div>
       </div>
 

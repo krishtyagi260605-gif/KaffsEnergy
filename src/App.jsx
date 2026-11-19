@@ -63,7 +63,7 @@ export default function App() {
         {/* 02 — The Strip (Packaging Render, 40mg Caffeine, 0 Sugar, 0 Cal) */}
         <ProductFeature />
 
-        {/* 03 — How It Works (4 Steps: Peel, Place, Dissolve in 3s, Activate) */}
+        {/* 03 — How It Works (4 Steps: Peel, Place, Dissolve in 30s, Activate) */}
         <HowItWorks />
 
         {/* 04 — Comparison (KAFF'S vs Energy Drinks vs Cafe Coffee) */}

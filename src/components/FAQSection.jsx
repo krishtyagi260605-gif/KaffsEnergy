@@ -7,15 +7,15 @@ export default function FAQSection() {
   const faqs = [
     {
       q: 'How do KAFF\'S caffeine strips work?',
-      a: 'Place a single micro-strip directly on your tongue. It dissolves on contact within 3 seconds, absorbing caffeine sublingually directly through your oral mucosa into your bloodstream in 3–5 minutes. No water or digestion required.',
+      a: 'Place a single strip directly on your tongue. It dissolves smoothly in 30 seconds, absorbing bioactive caffeine and nootropics sublingually directly through your oral mucosa into your bloodstream in 3–5 minutes. No water, no chewing, no stomach digestion required.',
     },
     {
-      q: 'How much caffeine is in each strip?',
-      a: 'Each strip contains precisely 40mg of pharmaceutical-grade caffeine — roughly equivalent to an espresso shot or half a standard energy drink, with 0g sugar and 0 calories.',
+      q: 'What is inside the formula and how much caffeine per strip?',
+      a: 'Each strip contains a synergistic bioactive formula: 40mg pure caffeine, 10mg L-Theanine (for smooth focus without spikes or jitters), 1mg Vitamin B6 (52.6% RDA), and 1mcg Vitamin B12 (45.5% RDA). Zero sugar, zero calories, GMP certified.',
     },
     {
       q: 'What flavors and packs are available in Founder Batch 001?',
-      a: 'Available in two signature flavors: ❄️ Cool Mint (crisp arctic peppermint) and ☕ Coffee Clash (dark roast espresso). Choose between Pack of 5 (₹229 → ₹181) and Pack of 10 (₹399 → ₹315) with our After Diwali Sale — 21% OFF + Free Delivery on all orders.',
+      a: 'Available in two signature flavors: ❄️ Cool Mint (crisp arctic peppermint) and ☕ Coffee Clash (dark roast espresso). Choose between Pack of 5 (₹229 → ₹195) and Pack of 10 (₹399 → ₹339) with our Early Black Friday Sale — 15% OFF + Free Pan-India Delivery on all orders.',
     },
     {
       q: 'When should I take KAFF\'S?',
@@ -23,7 +23,7 @@ export default function FAQSection() {
     },
     {
       q: 'Is KAFF\'S safe and legally compliant?',
-      a: 'Yes. KAFF\'S Energy is manufactured in state-of-the-art facilities following strict food safety standards and is FSSAI compliant. Formulated for healthy adults. We recommend not exceeding 4 strips in a single day.',
+      a: 'Yes. KAFF\'S Energy is manufactured in state-of-the-art GMP-certified facilities (BonAiyu Health, FSSAI Lic. 11220302000169) and marketed under FSSAI Reg. No. 22726701000408. Formulated for healthy adults. Not recommended for children, pregnant or lactating women.',
     },
     {
       q: 'When will my pre-order be delivered?',

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from './Icons';
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Check } from './Icons';
 
 export default function CartDrawer() {
   const {
@@ -10,11 +10,26 @@ export default function CartDrawer() {
     setIsCheckoutOpen,
     removeFromCart,
     updateQuantity,
+    appliedCoupon,
+    couponDiscount,
+    couponError,
+    applyCoupon,
+    removeCoupon,
     subtotal,
-    discountAmount,
-    shippingFee,
+    saleDiscountAmount,
     total,
   } = useCart();
+
+  const [couponInput, setCouponInput] = useState('');
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
+  const handleApply = async (e) => {
+    e.preventDefault();
+    if (!couponInput.trim()) return;
+    setIsApplyingCoupon(true);
+    await applyCoupon(couponInput);
+    setIsApplyingCoupon(false);
+  };
 
   if (!isCartOpen) return null;
 
@@ -31,8 +46,9 @@ export default function CartDrawer() {
         {/* Header */}
         <div className="p-5 sm:p-7 border-b border-white/[0.08] flex items-center justify-between">
           <div className="space-y-0.5">
-            <span className="text-[11px] font-sans font-semibold tracking-wider text-orange-400 uppercase">
-              After Diwali Sale — 21% OFF
+            <span className="text-[11px] font-sans font-semibold tracking-wider text-cyan-400 uppercase flex items-center gap-1.5">
+              <span>🖤</span>
+              <span>Early Black Friday Sale — 15% OFF</span>
             </span>
             <h3 className="text-xl sm:text-2xl font-black font-heading text-white uppercase tracking-tight">
               YOUR ORDER
@@ -62,7 +78,7 @@ export default function CartDrawer() {
           ) : (
             cartItems.map((item) => {
               const itemTotal = item.price * item.quantity;
-              const itemDiscount = Math.round(itemTotal * 0.21);
+              const itemDiscount = Math.round(itemTotal * 0.15);
               const itemSalePrice = itemTotal - itemDiscount;
               return (
                 <div
@@ -84,12 +100,12 @@ export default function CartDrawer() {
                     </div>
 
                     <div className="text-xs text-slate-400 font-medium">
-                      {item.stripCount} Strips • 40mg Caffeine / Strip
+                      {item.stripCount} Strips • 40mg Caffeine + L-Theanine
                     </div>
                     <div className="flex items-center gap-2 pt-0.5">
                       <span className="text-sm font-black text-white">₹{itemSalePrice}</span>
                       <span className="text-[11px] text-slate-500 line-through">₹{itemTotal}</span>
-                      <span className="text-[10px] font-bold text-orange-400">21% OFF</span>
+                      <span className="text-[10px] font-bold text-cyan-400 bg-cyan-400/10 px-1.5 py-0.2 rounded">15% OFF</span>
                     </div>
                   </div>
 
@@ -133,23 +149,78 @@ export default function CartDrawer() {
         {cartItems.length > 0 && (
           <div className="p-5 sm:p-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] border-t border-white/[0.08] bg-[#090B10] space-y-4">
 
+            {/* Coupon / Promo Code Input Section */}
+            <div className="space-y-2 pt-1">
+              {!appliedCoupon ? (
+                <form onSubmit={handleApply} className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter Coupon / Promo Code"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value)}
+                    className="flex-1 px-3.5 py-2.5 bg-[#0D111A] border border-white/10 rounded-xl text-xs font-mono text-white placeholder-slate-500 uppercase focus:outline-none focus:border-cyan-400"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isApplyingCoupon || !couponInput.trim()}
+                    className="px-4 py-2.5 rounded-xl bg-cyan-400 text-black font-sans font-bold text-xs uppercase tracking-wider hover:bg-cyan-300 disabled:opacity-40 transition-all cursor-pointer"
+                  >
+                    {isApplyingCoupon ? '...' : 'APPLY'}
+                  </button>
+                </form>
+              ) : (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 font-mono uppercase">
+                      <Check className="w-3.5 h-3.5" />
+                      <span>CODE: {appliedCoupon}</span>
+                    </div>
+                    <div className="text-[11px] text-emerald-300">
+                      🎁 1x Pack of 5 is 100% FREE (Founder VIP Gift)
+                    </div>
+                  </div>
+                  <button
+                    onClick={removeCoupon}
+                    className="text-xs text-slate-400 hover:text-red-400 p-1 cursor-pointer font-mono"
+                    title="Remove coupon"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {couponError && (
+                <p className="text-[11px] text-red-400 font-mono">
+                  ⚠️ {couponError}
+                </p>
+              )}
+            </div>
+
             {/* Price Breakdown */}
-            <div className="space-y-2 text-xs text-slate-400">
+            <div className="space-y-2 text-xs text-slate-400 pt-1 border-t border-white/[0.06]">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span className="text-slate-500 line-through">₹{subtotal}</span>
               </div>
-              <div className="flex justify-between text-orange-400 font-semibold">
-                <span>After Diwali Sale (21% OFF)</span>
-                <span>−₹{discountAmount}</span>
+              <div className="flex justify-between text-cyan-400 font-semibold">
+                <span>Early Black Friday Sale (15% OFF)</span>
+                <span>−₹{saleDiscountAmount}</span>
               </div>
+              {appliedCoupon === 'founder001' && couponDiscount > 0 && (
+                <div className="flex justify-between text-emerald-400 font-semibold">
+                  <span>Founder VIP Pass (founder001)</span>
+                  <span>−₹{couponDiscount} (FREE)</span>
+                </div>
+              )}
               <div className="flex justify-between">
-                <span>Delivery</span>
+                <span>Pan-India Delivery</span>
                 <span className="text-emerald-400 font-medium">FREE</span>
               </div>
               <div className="flex justify-between text-base font-black text-white pt-2.5 border-t border-white/[0.08] font-heading">
                 <span>You Pay</span>
-                <span className="text-cyan-400">₹{total}</span>
+                <span className={total === 0 ? "text-emerald-400 text-lg font-black" : "text-cyan-400"}>
+                  {total === 0 ? '₹0 (FREE)' : `₹${total}`}
+                </span>
               </div>
             </div>
 
@@ -159,14 +230,18 @@ export default function CartDrawer() {
                 setIsCartOpen(false);
                 setIsCheckoutOpen(true);
               }}
-              className="w-full py-4 rounded-full bg-white text-black font-sans font-bold text-xs tracking-wider uppercase hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl"
+              className={`w-full py-4 rounded-full font-sans font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl ${
+                total === 0
+                  ? 'bg-emerald-400 text-black hover:bg-emerald-300 active:scale-[0.98]'
+                  : 'bg-white text-black hover:bg-slate-200 active:scale-[0.98]'
+              }`}
             >
-              <span>CHECKOUT • ₹{total}</span>
+              <span>{total === 0 ? 'CLAIM FREE ORDER • ₹0' : `CHECKOUT • ₹${total}`}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
 
             <div className="text-[11px] text-slate-400 text-center font-medium">
-              🔒 Secure Checkout via Cashfree • Free Delivery
+              {total === 0 ? '✨ 100% Free VIP Pre-Order • Batch 001' : '🔒 Secure Checkout via Cashfree • Free Delivery'}
             </div>
 
           </div>

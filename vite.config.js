@@ -98,6 +98,49 @@ function cashfreeDevPlugin() {
           return;
         }
 
+        // 3. Coupon Check Endpoint (dev middleware)
+        if (req.url?.startsWith('/api/check-coupon') && req.method === 'GET') {
+          const parsedUrl = new URL(req.url, 'http://localhost');
+          const code = (parsedUrl.searchParams.get('code') || '').toLowerCase().trim();
+          res.setHeader('Content-Type', 'application/json');
+          if (code === 'founder001') {
+            res.statusCode = 200;
+            res.end(JSON.stringify({
+              valid: true,
+              code: 'founder001',
+              claimed: globalThis.__devCouponClaimed || false,
+              discountType: '100_PERCENT_PACK_5',
+              maxUses: 1,
+            }));
+          } else {
+            res.statusCode = 200;
+            res.end(JSON.stringify({ valid: false, message: 'Invalid coupon' }));
+          }
+          return;
+        }
+
+        // 4. Coupon Claim Endpoint (dev middleware)
+        if (req.url === '/api/claim-coupon' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => { body += chunk; });
+          req.on('end', () => {
+            try {
+              const payload = JSON.parse(body || '{}');
+              if ((payload.code || '').toLowerCase().trim() === 'founder001') {
+                globalThis.__devCouponClaimed = true;
+              }
+              res.setHeader('Content-Type', 'application/json');
+              res.statusCode = 200;
+              res.end(JSON.stringify({ success: true, claimed: true }));
+            } catch (err) {
+              res.setHeader('Content-Type', 'application/json');
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+          });
+          return;
+        }
+
         next();
       });
     },

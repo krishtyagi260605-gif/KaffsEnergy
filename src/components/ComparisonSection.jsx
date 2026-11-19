@@ -39,7 +39,7 @@ export default function ComparisonSection() {
     },
     {
       feature: 'Cost Per Serving',
-      kaffs: '₹39.90 – ₹45.80',
+      kaffs: '₹33.90 – ₹39.00',
       energyDrinks: '₹125 – ₹160 / can',
       coffee: '₹150 – ₹280 / cup',
       winner: true,

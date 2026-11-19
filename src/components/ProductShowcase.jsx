@@ -93,11 +93,11 @@ function ProductCard({ sku, onAddToCart, isFeatured }) {
           <div className="flex items-baseline gap-2.5">
             <span className="text-3xl sm:text-4xl font-black font-heading text-white">₹{sku.salePrice}</span>
             <span className="text-base text-slate-500 line-through font-medium">₹{sku.price}</span>
-            <span className="text-xs font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full">21% OFF</span>
+            <span className="text-xs font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-400/20 px-2 py-0.5 rounded-full">15% OFF</span>
           </div>
         </div>
         <div className="text-[11px] text-slate-400 font-medium">
-          {sku.saleUnitPrice} • Free Delivery
+          {sku.saleUnitPrice} • Free Pan-India Delivery
         </div>
 
         <button
@@ -125,10 +125,10 @@ export default function ProductShowcase() {
       id: 'kaffs-5',
       title: 'PACK OF 5',
       price: 229,
-      salePrice: 181,
+      salePrice: 195,
       strips: 5,
       unitPrice: '₹45.80 / strip',
-      saleUnitPrice: '₹36.20 / strip',
+      saleUnitPrice: '₹39.00 / strip',
       badge: 'STARTER PACK',
       image: '/brand/kaffs-pack-5.png',
       coffeeImage: '/brand/kaffs-pack-5-coffee.jpg',
@@ -138,10 +138,10 @@ export default function ProductShowcase() {
       id: 'kaffs-10',
       title: 'PACK OF 10',
       price: 399,
-      salePrice: 315,
+      salePrice: 339,
       strips: 10,
       unitPrice: '₹39.90 / strip',
-      saleUnitPrice: '₹31.50 / strip',
+      saleUnitPrice: '₹33.90 / strip',
       badge: 'BEST VALUE',
       image: '/brand/kaffs-pack-10.png',
       coffeeImage: '/brand/kaffs-pack-10-coffee.jpg',
@@ -171,14 +171,15 @@ export default function ProductShowcase() {
         
         {/* Section Header */}
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <div className="text-xs font-sans tracking-[0.2em] text-orange-400 font-bold uppercase">
-            🪔 AFTER DIWALI SALE — 21% OFF
+          <div className="inline-flex items-center gap-2 text-xs font-sans tracking-[0.2em] text-cyan-400 font-bold uppercase bg-cyan-950/40 border border-cyan-400/20 px-3.5 py-1.5 rounded-full">
+            <span>🖤</span>
+            <span>EARLY BLACK FRIDAY SALE — 15% OFF</span>
           </div>
           <h2 className="text-3xl sm:text-6xl font-black font-heading tracking-tight text-white uppercase leading-[1.05]">
             CHOOSE YOUR PACK.
           </h2>
           <p className="text-sm text-slate-300 font-normal pt-1">
-            Sale prices applied. Free delivery on all orders. Dispatches in 2–3 weeks.
+            Early Black Friday pricing applied automatically. Free pan-India delivery. Dispatches in 2–3 weeks.
           </p>
         </div>
 

@@ -49,7 +49,7 @@ export default function Footer() {
           </p>
           <h4 className="text-white font-bold uppercase tracking-wider text-sm pt-2">2. Pricing & Currency</h4>
           <p>
-            All prices are in Indian Rupees (INR) inclusive of applicable taxes. Pack of 5 is priced at ₹181 (MRP ₹229), and Pack of 10 at ₹315 (MRP ₹399) during the After Diwali Sale — 21% OFF. Free delivery on all orders.
+            All prices are in Indian Rupees (INR) inclusive of applicable taxes. Pack of 5 is priced at ₹195 (MRP ₹229), and Pack of 10 at ₹339 (MRP ₹399) during the Early Black Friday Sale — 15% OFF. Free delivery on all orders.
           </p>
           <h4 className="text-white font-bold uppercase tracking-wider text-sm pt-2">3. Product Consumption</h4>
           <p>
@@ -84,7 +84,7 @@ export default function Footer() {
           </ul>
           <h4 className="text-white font-bold uppercase tracking-wider text-sm pt-2">3. Shipping Charges</h4>
           <p>
-            Free delivery on all orders during the After Diwali Sale. Standard shipping is available pan-India with tracking provided via WhatsApp and SMS.
+            Free delivery on all orders during the Early Black Friday Sale. Standard shipping is available pan-India with tracking provided via WhatsApp and SMS.
           </p>
         </div>
       ),

@@ -38,11 +38,11 @@ export default function MobileStickyBar() {
         
         {/* Left Info */}
         <div className="space-y-0.5">
-          <div className="text-[10px] font-sans tracking-wider uppercase font-bold text-orange-400">
-            🪔 After Diwali Sale • 21% OFF
+          <div className="text-[10px] font-sans tracking-wider uppercase font-bold text-cyan-400">
+            🖤 Early Black Friday • 15% OFF
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-base font-black font-heading text-white">FROM ₹181</span>
+            <span className="text-base font-black font-heading text-white">FROM ₹195</span>
             <span className="text-[11px] text-slate-500 line-through">₹229</span>
             <span className="text-[10px] font-medium text-emerald-400 font-sans">Free Delivery</span>
           </div>

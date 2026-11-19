@@ -31,7 +31,7 @@ export default function ProductFeature() {
           <div className="lg:col-span-6 space-y-8 order-1 lg:order-2 text-center lg:text-left">
             
             <div className="text-xs font-sans tracking-[0.2em] text-cyan-400 font-bold uppercase">
-              THE FORMULA
+              THE SYNERGISTIC NOOTROPIC FORMULA
             </div>
 
             <h2 className="text-4xl sm:text-6xl font-black font-heading tracking-tight text-white uppercase leading-[0.98]">
@@ -40,23 +40,47 @@ export default function ProductFeature() {
             </h2>
 
             <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed max-w-lg mx-auto lg:mx-0">
-              A micro-thin caffeine strip that dissolves effortlessly on your tongue. No cans, no water, no sugar spike. Just place, melt, and focus.
+              A pocket-sized oral caffeine strip engineered with bioactive nootropics. Dissolves on your tongue in 30 seconds for direct mucosal absorption. No cans, no water, no jitters.
             </p>
 
-            {/* Clean Spec Grid */}
-            <div className="grid grid-cols-3 gap-6 pt-4 border-t border-white/[0.08] max-w-md mx-auto lg:mx-0">
-              <div className="space-y-1">
-                <div className="text-2xl sm:text-3xl font-black font-heading text-white">40mg</div>
-                <div className="text-xs text-slate-400 font-medium">Pure Caffeine</div>
+            {/* Real Packaging Bioactive Nootropics Spec Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-white/[0.08] max-w-lg mx-auto lg:mx-0">
+              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-0.5">
+                <div className="text-xl sm:text-2xl font-black font-heading text-white">40mg</div>
+                <div className="text-[11px] text-cyan-400 font-bold uppercase">Caffeine</div>
+                <div className="text-[10px] text-slate-500">Pure Alertness</div>
               </div>
-              <div className="space-y-1">
-                <div className="text-2xl sm:text-3xl font-black font-heading text-white">0g</div>
-                <div className="text-xs text-slate-400 font-medium">Sugar Added</div>
+              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-0.5">
+                <div className="text-xl sm:text-2xl font-black font-heading text-white">10mg</div>
+                <div className="text-[11px] text-cyan-400 font-bold uppercase">L-Theanine</div>
+                <div className="text-[10px] text-slate-500">Smooth Focus</div>
               </div>
-              <div className="space-y-1">
-                <div className="text-2xl sm:text-3xl font-black font-heading text-white">0</div>
-                <div className="text-xs text-slate-400 font-medium">Total Calories</div>
+              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-0.5">
+                <div className="text-xl sm:text-2xl font-black font-heading text-white">1mg B6</div>
+                <div className="text-[11px] text-cyan-400 font-bold uppercase">52.6% RDA</div>
+                <div className="text-[10px] text-slate-500">Brain Vitality</div>
               </div>
+              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-0.5">
+                <div className="text-xl sm:text-2xl font-black font-heading text-white">1mcg B12</div>
+                <div className="text-[11px] text-cyan-400 font-bold uppercase">45.5% RDA</div>
+                <div className="text-[10px] text-slate-500">Cellular Energy</div>
+              </div>
+            </div>
+
+            {/* Key Benefits Pillars directly from packaging: Energy, Focus, Mind, Endurance */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-1 text-xs text-slate-300 font-medium">
+              <span className="px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white font-mono text-[11px] font-semibold">
+                ⚡ ENERGY
+              </span>
+              <span className="px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white font-mono text-[11px] font-semibold">
+                🎯 FOCUS
+              </span>
+              <span className="px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white font-mono text-[11px] font-semibold">
+                🧠 MIND
+              </span>
+              <span className="px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white font-mono text-[11px] font-semibold">
+                🏃 ENDURANCE
+              </span>
             </div>
 
             {/* Flavors Available */}
@@ -66,6 +90,9 @@ export default function ProductFeature() {
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-950/40 border border-amber-400/20 text-amber-300">
                 ☕ Coffee Clash
+              </span>
+              <span className="text-slate-500 text-[11px]">
+                GMP Certified • FSSAI Registered
               </span>
             </div>
 

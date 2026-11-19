@@ -32,8 +32,8 @@ export default function Navbar() {
           <span className="hidden sm:inline text-slate-400">•</span>
           <span>Pre-Orders Live • 40mg Caffeine Micro-Strips</span>
           <span className="hidden md:inline text-slate-400">•</span>
-          <span className="hidden md:inline text-orange-300 font-semibold">
-            🪔 After Diwali Sale — Flat 21% OFF + Free Delivery
+          <span className="hidden md:inline text-cyan-300 font-semibold">
+            🖤 Early Black Friday Sale — Flat 15% OFF + Free Delivery
           </span>
         </div>
       </div>
@@ -154,7 +154,7 @@ export default function Navbar() {
                 className="text-left py-2 hover:text-cyan-300 transition-colors border-b border-white/[0.04] flex items-center justify-between"
               >
                 <span>How It Works</span>
-                <span className="text-xs text-slate-500">3 Seconds</span>
+                <span className="text-xs text-slate-500">30 Seconds</span>
               </button>
               <button
                 onClick={() => scrollToSection('why-kaffs')}
@@ -194,7 +194,7 @@ export default function Navbar() {
                 }}
                 className="w-full py-3.5 rounded-full bg-white text-black font-sans font-bold text-xs tracking-wider uppercase text-center active:scale-98 transition-transform shadow-lg"
               >
-                PRE-ORDER BATCH 001 (FROM ₹229)
+                PRE-ORDER BATCH 001 (FROM ₹195)
               </button>
             </div>
           </div>
